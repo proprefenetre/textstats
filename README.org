@@ -1,15 +1,7 @@
 * Tekstkenmerken
-** Topic
-- Topic modelling
+** Topic modelling
 ** Social network analysis
-*** TODO lezen
-- [ ] Tieken (Brown corpus/Boswell letters)
-- [ ] Nevalainen (?)
-** TODO Letter object
-+ metadata
-+ contents
-  - names
-  - places
+- Tieken, Nevalainen &c, Boswell letters, Brown corpus
 ** Sentiment analysis
 * Tools/libraries
 ** tei-reader
@@ -17,6 +9,8 @@ Doet het niet heel lekker, plakt dingen aan elkaar die los moeten en vv.
 ** lxml
 Gezeik met xpath altijd :/
 ** NLTK
+** gensim
+- topic modelling
 ** Spacy
 - model voor Nederlands
 - OO ipv. string processing (NLTK)
