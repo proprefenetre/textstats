@@ -1,5 +1,6 @@
 from lxml import etree
 import re
+import string
 
 class Letter:
 
@@ -14,12 +15,16 @@ class Letter:
             names[re.sub(r'\s+', r' ', e.text)] = e.get('key')
         return names
 
-    def original_text(self):
+    def original_text(self, strip=False, lower=False):
         find_textual_notes = etree.ETXPath("//{http://www.tei-c.org/ns/1.0}div[@type=\"textualNotes\"]")
         for e in find_textual_notes(self.xml):
             e.getparent().remove(e)
         find = etree.ETXPath("//{http://www.tei-c.org/ns/1.0}div[@type=\"original\"]//text()")
         text = ''.join(find(self.xml))
-        # text = re.sub(r'[\s’]+', r' ', text)
-        # text = re.sub(r'[–&.,!?;()\\\/─_“”‘-]+', r'', text)
+        if strip:
+            # strip whitespace & punctuation
+            text = re.sub(r'[\s’]+', r' ', text)
+            text = re.sub(rf'[\–\─\-“”‘{string.punctuation}]+', r'', text)
+        if lower:
+            text = text.lower()
         return text

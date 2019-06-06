@@ -14,3 +14,5 @@ Gezeik met xpath altijd :/
 ** Spacy
 - model voor Nederlands
 - OO ipv. string processing (NLTK)
+* Misc
+** NB <c type="shy"> → afbreekstreepje dat verdwijnt in weergave [[http://www.vangoghletters.org/ns/vgodd.xsd][(schema)]]
