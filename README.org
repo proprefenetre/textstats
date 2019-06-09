@@ -1,21 +1,32 @@
 * Tekstkenmerken
 ** Topic modelling
-*** Latent Dirichlet Allocation ([[http://www.matthewjockers.net/2011/09/29/the-lda-buffet-is-now-open-or-latent-dirichlet-allocation-for-english-majors/][LDA]])
-
+*** READ Latent Dirichlet Allocation ([[http://www.matthewjockers.net/2011/09/29/the-lda-buffet-is-now-open-or-latent-dirichlet-allocation-for-english-majors/][LDA]])
+*** TODO Clustering?
 ** Social network analysis
 - Tieken, Nevalainen &c, Boswell letters, Brown corpus
 ** Sentiment analysis
-** complexiteit
+** Statistics
+- Complexiteit
+- Frequent words (→ topics)
+-
 * Tools/libraries
 ** tei-reader
 Doet het niet heel lekker, plakt dingen aan elkaar die los moeten en vv.
 ** lxml
-Gezeik met xpath altijd :/
+- ETXpath → namespaces
 ** NLTK
-** gensim
+** Gensim
 - topic modelling
 ** Spacy
-- model voor Nederlands
-- OO ipv. string processing (NLTK)
+*** doet Spacy meer dan alleen tagging & NER?
 * Misc
 ** NB <c type="shy"> → afbreekstreepje dat verdwijnt in weergave [[http://www.vangoghletters.org/ns/vgodd.xsd][(schema)]]
+I.e. de apostrofen & aanhalingstekens handmatig normaliseren ()
+** unicode codepoints
+| left single quotation mark    | #x2018 | ‘ |
+| right single quotation mark   | #x2019 | ’ |
+| left double quotation mark    | #x201C | “ |
+| right double quotation mark   | #x201D | ” |
+| en dash                       | #x2013 | – |
+| box drawings light horizontal | #x2500 | – |
+| hyphen-minus                  | #x2D   |  - |
