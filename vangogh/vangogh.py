@@ -11,4 +11,8 @@ from letter import Letter
 
 corpus = [Letter(f"/home/niels/projects/vangogh/letters/let{n:0>3}.xml") for n in range(1, 11)]
 
-text = [l.preprocess() for l in corpus]
+text = ' '.join([l.preprocess(levels=["apostrophes", "punctuation",
+                                      "diacritics", "contractions",
+                                      "whitespace"]) for l in corpus])
+
+print(text)

@@ -16,7 +16,7 @@ class Letter:
         names = {}
         find_names = etree.ETXPath("//{http://www.tei-c.org/ns/1.0}rs")
         for e in find_names(self.xml):
-            names[re.sub(r'\s+', r' ', e.text)] = e.get('key')
+            names[re.sub(r"\s+", r" ", e.text)] = e.get("key")
         return names
 
     def original_text(self):
@@ -32,11 +32,20 @@ class Letter:
         return text
 
     def _whitespace(self, text):
-        return re.sub("\s+", " ", text)
+        return re.sub("\s+", " ", text).strip()
+
+    def _apostrophes(self, text):
+        """
+        Replace RIGHT SINGLE QUOTATION MARK with ascii apostrophe
+        """
+        return re.sub("\u2019", "'", text)
 
     def _punctuation(self, text):
         """
-        remove unicode & ascii punctuation, except for apostrophes
+        Remove unicode & ascii punctuation. Apostrophes are not removed because
+        they could be of interest (also, there is no single replacement rule
+        that returns wellformed elements)
+
         """
         unicode_punct = [
             '\u00a0', # NO-BREAK SPACE
@@ -55,16 +64,33 @@ class Letter:
             '\u2026', # HORIZONTAL ELLIPSIS
             '\u2500', # BOX DRAWINGS LIGHT HORIZONTAL
             '\u25a1', # WHITE SQUARE
-            # '\u2019', # RIGHT SINGLE QUOTATION MARK
+            '\u2019', # RIGHT SINGLE QUOTATION MARK
         ]
+
         string_punct = list(string.punctuation)
+        string_punct.remove("'")
         return re.sub(rf"[{''.join(unicode_punct + string_punct)}]", "", text)
 
-    def _apostrophes(self, text):
+    def _contractions(self, text):
         """
-        Replace RIGHT SINGLE QUOTATION MARK with ascii apostrophe
+        Remove common contractions, e.g.:
+        't  : het
+        m'n : mijn
+        z'n : zijn
+        d'  : de
         """
-        return re.sub('\u2019', '\'', text)
+        patterns = [
+            (r"\b(t)'(\w+)", "\g<1>\g<2>"), # t'huis → thuis
+            (r"'t", "het"),
+            (r"(m|z)'(n)", "\g<1>ij\g<2>"), # m'n → mijn, z'n → zijn
+            (r"d'\w+", "de "), # d'oogst → de oogst
+        ]
+        for pat in patterns:
+            text = re.sub(pat[0], pat[1], text)
+        return text
+
+    def _characters(self, text):
+        return re.sub("\u00e6", "aa", text) # LATIN SMALL LETTER AE
 
     def _diacritics(self, text):
         """
@@ -72,21 +98,19 @@ class Letter:
         """
         return "".join(c for c in unicodedata.normalize("NFKD", text) if not unicodedata.combining(c))
 
-    def preprocess(self, levels=['whitespace', 'punctuation', 'apostrophes', 'diacritics']):
+    def preprocess(self, levels=["apostrophes", "punctuation", "diacritics", "contractions", "whitespace"]):
         """
         preprocess the text,
 
         """
-        dispatch = {'whitespace': self._whitespace,
-                    'punctuation': self._punctuation,
-                    'apostrophes': self._apostrophes,
-                    'diacritics': self._diacritics}
+        dispatch = {"whitespace": self._whitespace,
+                    "punctuation": self._punctuation,
+                    "apostrophes": self._apostrophes,
+                    "contractions": self._contractions,
+                    "characters": self._characters,
+                    "diacritics": self._diacritics,}
 
         text = self.original_text()
         for l in levels:
             text = dispatch[l](text)
-        # text = self._whitespace(text)
-        # text = self._punctuation(text)
-        # text = self._apostrophes(text)
-        # text = self._diacritics(text)
         return text
