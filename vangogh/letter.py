@@ -80,10 +80,10 @@ class Letter:
         d'  : de
         """
         patterns = [
-            (r"\b(t)'(\w+)", "\g<1>\g<2>"), # t'huis → thuis
+            (r"\b(t)'(\w+)", "\g<1>\g<2>"),
             (r"'t", "het"),
-            (r"(m|z)'(n)", "\g<1>ij\g<2>"), # m'n → mijn, z'n → zijn
-            (r"d'\w+", "de "), # d'oogst → de oogst
+            (r"(m|z)'(n)", "\g<1>ij\g<2>"),
+            (r"d'\w+", "de "),
         ]
         for pat in patterns:
             text = re.sub(pat[0], pat[1], text)

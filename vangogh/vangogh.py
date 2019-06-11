@@ -1,5 +1,4 @@
 from codepoints import process
-
 from pprint import pprint
 import re
 import spacy
