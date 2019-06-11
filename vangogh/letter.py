@@ -9,6 +9,14 @@ class Letter:
     def __init__(self, xml, parser=etree.XMLParser(attribute_defaults=True)):
         self.xml = etree.parse(xml, parser)
 
+    def metadata(self):
+        """
+        Extract metadata from the TEI.
+        returns: dict
+        """
+        pass
+
+
     def people(self):
         """
         Extract names of people mentioned in the letters
