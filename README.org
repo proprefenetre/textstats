@@ -29,4 +29,9 @@ I.e. de apostrofen & aanhalingstekens handmatig normaliseren ()
 | right double quotation mark   | #x201D | ” |
 | en dash                       | #x2013 | – |
 | box drawings light horizontal | #x2500 | – |
-| hyphen-minus                  | #x2D   |  - |
+| hyphen-minus                  | #x2D   | - |
+* test
+🐱
+À
+á
+ô
