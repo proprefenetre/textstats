@@ -2,7 +2,6 @@
 ** Topic modelling
 *** READ Latent Dirichlet Allocation ([[http://www.matthewjockers.net/2011/09/29/the-lda-buffet-is-now-open-or-latent-dirichlet-allocation-for-english-majors/][LDA]])
 *** TODO Clustering?
-** Social network analysis
 ** Sentiment analysis
 ** Statistics
 - average word length

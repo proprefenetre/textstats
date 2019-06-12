@@ -1,14 +1,8 @@
-from codepoints import process
-from lxml import etree
-from pprint import pprint
-import re
-# import spacy
-# from spacy.lang.nl.stop_words import STOP_WORDS
+from collections import Counter
+import spacy
+from spacy.lang.nl import STOP_WORDS
 from teidoc import TeiDoc
 
-# nlp = spacy.load('nl_core_news_sm')
-let = TeiDoc("/home/niels/projects/vangogh/letters/let001.xml")
+nlp = spacy.load('nl_core_news_sm')
 
-print(let.text()['original'])
-
-print(let.preprocess())
+corpus = [nlp(TeiDoc(f"/home/niels/projects/vangogh/letters/let{n:03}.xml").preprocess()) for n in range(1, 200)]
