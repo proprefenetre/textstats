@@ -7,19 +7,25 @@
 ** Statistics
 - average word length
 - average sentence length
-- measures for complexity,
+- measures of complexity,
 - potential key words (KWIC?)
 - words with relatively high term frequency (tf-idf)
+- collocations
+- n-grams
 * Tools/libraries
-** tei-reader
-Doet het niet heel lekker, plakt dingen aan elkaar die los moeten en vv.
 ** lxml
 - ETXpath → namespaces
-** DONE NLTK
+** NLTK
+freq. dists. &c
 ** Gensim
 - topic modelling
 ** Spacy
-*** doet Spacy meer dan alleen tagging & NER?
+*** DONE doet Spacy meer dan alleen tagging & NER?
+Nee
+* Preprocessing
+- [X] +strip everything+
+- [ ] stick to normalization of unicode characters & let SpaCy do the rest
+
 * Misc
 ** NB <c type="shy"> → afbreekstreepje dat verdwijnt in weergave [[http://www.vangoghletters.org/ns/vgodd.xsd][(schema)]]
 I.e. de apostrofen & aanhalingstekens handmatig normaliseren ()

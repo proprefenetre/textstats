@@ -4,10 +4,12 @@ import string
 import sys
 import unicodedata
 
-class Letter:
+class TeiDoc:
 
     def __init__(self, xml, parser=etree.XMLParser(attribute_defaults=True)):
         self.xml = etree.parse(xml, parser)
+        self.namespaces = {"tei": "{http://www.tei-c.org/ns/1.0}",
+                           "vg": "http://www.vangoghletters.org/ns/"}
 
     def metadata(self):
         """
@@ -15,7 +17,6 @@ class Letter:
         returns: dict
         """
         pass
-
 
     def people(self):
         """
@@ -27,17 +28,17 @@ class Letter:
             names[re.sub(r"\s+", r" ", e.text)] = e.get("key")
         return names
 
-    def original_text(self):
+    def text(self):
         """
-        Return transcription (without textual notes)
-        """
-        find_textual_notes = etree.ETXPath("//{http://www.tei-c.org/ns/1.0}div[@type=\"textualNotes\"]")
-        for e in find_textual_notes(self.xml):
-            e.getparent().remove(e)
+        Extract text from the xml.
 
-        find = etree.ETXPath("//{http://www.tei-c.org/ns/1.0}div[@type=\"original\"]//text()")
-        text = ''.join(find(self.xml))
-        return text
+        Returns: dict with text layers and notes
+        """
+        text_tree = etree.ElementTree(self.xml.find("{http://www.tei-c.org/ns/1.0}text"))
+        layers = {}
+        for e in text_tree.findall(".//{http://www.tei-c.org/ns/1.0}div"):
+            layers[e.get("type")] = "".join(e.xpath(".//text()"))
+        return layers
 
     def _whitespace(self, text):
         return re.sub("\s+", " ", text).strip()
@@ -50,9 +51,7 @@ class Letter:
 
     def _punctuation(self, text):
         """
-        Remove unicode & ascii punctuation. Apostrophes are not removed because
-        they could be of interest (also, there is no single replacement rule
-        that returns wellformed elements)
+        Remove unicode. Keep other punctuation for sentence boundary recognition
 
         """
         unicode_punct = [
@@ -75,30 +74,18 @@ class Letter:
             '\u2019', # RIGHT SINGLE QUOTATION MARK
         ]
 
-        string_punct = list(string.punctuation)
-        string_punct.remove("'")
-        return re.sub(rf"[{''.join(unicode_punct + string_punct)}]", "", text)
+        return re.sub(rf"[{''.join(unicode_punct)}]", "", text)
 
-    def _contractions(self, text):
+    def _contractions(self, text, patterns=[(r"\b(t)'(\w+)", "\g<1>\g<2>"), (r"d'(\w+)", "de \g<2>" )]):
         """
-        Remove common contractions, e.g.:
-        't  : het
-        m'n : mijn
-        z'n : zijn
-        d'  : de
+        Remove contractions, e.g.:
+            t'huis → thuis
+            't → het
+            d' → de
         """
-        patterns = [
-            (r"\b(t)'(\w+)", "\g<1>\g<2>"),
-            (r"'t", "het"),
-            (r"(m|z)'(n)", "\g<1>ij\g<2>"),
-            (r"d'\w+", "de "),
-        ]
         for pat in patterns:
             text = re.sub(pat[0], pat[1], text)
         return text
-
-    def _characters(self, text):
-        return re.sub("\u00e6", "aa", text) # LATIN SMALL LETTER AE
 
     def _diacritics(self, text):
         """
@@ -106,19 +93,18 @@ class Letter:
         """
         return "".join(c for c in unicodedata.normalize("NFKD", text) if not unicodedata.combining(c))
 
-    def preprocess(self, levels=["apostrophes", "punctuation", "diacritics", "contractions", "whitespace"]):
+    def preprocess(self, funcs=["apostrophes", "punctuation", "diacritics", "contractions", "whitespace"]):
         """
         preprocess the text,
 
         """
         dispatch = {"whitespace": self._whitespace,
-                    "punctuation": self._punctuation,
                     "apostrophes": self._apostrophes,
+                    "punctuation": self._punctuation,
                     "contractions": self._contractions,
-                    "characters": self._characters,
                     "diacritics": self._diacritics,}
 
-        text = self.original_text()
+
         for l in levels:
             text = dispatch[l](text)
         return text

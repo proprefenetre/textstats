@@ -1,5 +1,13 @@
-from vangogh import __version__
+from vangogh import teidoc as td
 
 
-def test_version():
-    assert __version__ == '0.1.0'
+class TestTeiDoc:
+
+    def test_text_extraction(self):
+        letter = td.TeiDoc(f"/home/niels/projects/vangogh/letters/let001.xml")
+        layers = letter.text()
+        assert isinstance(layers, dict)
+        assert len(layers) == 4
+        assert all(key in layers for key in ["original", "translation",
+                                             "textualNotes", "notes"])
+        assert all(isinstance(v, str) for v in layers.values())
