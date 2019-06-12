@@ -11,3 +11,7 @@ class TestTeiDoc:
         assert all(key in layers for key in ["original", "translation",
                                              "textualNotes", "notes"])
         assert all(isinstance(v, str) for v in layers.values())
+        text = letter.preprocess()
+        assert isinstance(text, str)
+        text_2 = letter.preprocess(funcs=["apostrophes", "contractions", "whitespace"])
+        assert text == text_2
