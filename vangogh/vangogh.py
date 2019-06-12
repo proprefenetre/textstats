@@ -9,4 +9,6 @@ from teidoc import TeiDoc
 # nlp = spacy.load('nl_core_news_sm')
 let = TeiDoc("/home/niels/projects/vangogh/letters/let001.xml")
 
-print(let.text())
+print(let.text()['original'])
+
+print(let.preprocess())
