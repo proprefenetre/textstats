@@ -27,6 +27,7 @@ VG_PUNCT = {
     "-"     : "",
     "_"     : "",
     "t'"    : "t",
+    "d'"    : "de ",
  }
 
 
@@ -78,32 +79,11 @@ class TeiDoc:
             text = re.sub(k, v, text)
         return text
 
-    def _contractions(self, text):
-        """
-        Remove contractions, e.g.:
-            t'huis → thuis
-            't → het
-            d' → de
-        """
-        patterns =[
-            ("(t)'(\w+)", "\g<1>\g<2>"),
-            ("d'(\w+)", "de \g<1>" )
-        ]
-        for pat in patterns:
-            text = re.sub(pat[0], pat[1], text)
-
-        return text
 
     def _diacritics(self, text):
         return "".join(c for c in unicodedata.normalize("NFKD", text) if not unicodedata.combining(c))
 
     def preprocess(self, funcs=["punctuation", "diacritics", "contractions"]):
 
-        dispatch = {"punctuation": self._punctuation,
-                    "contractions": self._contractions,
-                    "diacritics": self._diacritics,}
-
-        text = self.layers["original"]
-        for fun in funcs:
-            text = dispatch[fun](text)
+        text = self._punctuation(self._diacritics(self.layers["original"]))
         return text
