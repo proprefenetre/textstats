@@ -16,9 +16,18 @@ class TeiDoc:
         Extract metadata from the TEI.
         returns: dict
         """
-        pass
+        nsmap = {"tei" : "http://www.tei-c.org/ns/1.0",
+                 "vg": "http://www.vangoghletters.org/ns/"}
+        # header_tree = etree.ElementTree(self.xml.find("{http://www.tei-c.org/ns/1.0}sourceDesc"))
+        lh = self.xml.getroot().xpath("//tei:teiHeader//tei:sourceDesc/vg:letDesc/vg:letHeading", namespaces=nsmap)[0]
+        metadata = {"author": lh[0].text,
+                    "addressee": lh[1].text,
+                    "place": lh[2].text,
+                    "date": lh[3].text,
+        }
+        return metadata
 
-    def people(self):
+    def mentions(self):
         """
         Extract names of people mentioned in the letters
         """
@@ -35,6 +44,7 @@ class TeiDoc:
         text_tree = etree.ElementTree(self.xml.find("{http://www.tei-c.org/ns/1.0}text"))
         layers = {}
         for e in text_tree.findall(".//{http://www.tei-c.org/ns/1.0}div"):
+            # remove textualNotes
             if e.get("type") == "original":
                 try:
                     e.remove(e.findall(".//{http://www.tei-c.org/ns/1.0}div")[0])

@@ -24,15 +24,14 @@ freq. dists. &c
 Nee
 ** Scikit-learn
 *** decomposition
-- NMF,
-- LatentDirichletAllocation,
+- NMF
+- LatentDirichletAllocation
 - TruncatedSVD
 *** feature_extraction
 - CountVectorizer
 * Preprocessing
 - [X] +strip everything+
 - [ ] stick to normalization of unicode characters & let SpaCy do the rest
-
 * Misc
 ** NB <c type="shy"> → afbreekstreepje dat verdwijnt in weergave [[http://www.vangoghletters.org/ns/vgodd.xsd][(schema)]]
 I.e. de apostrofen & aanhalingstekens handmatig normaliseren ()
