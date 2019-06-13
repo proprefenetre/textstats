@@ -25,4 +25,8 @@ class TestTeiDoc:
     def test_header_extraction(self):
         header = self.letter.metadata()
         assert isinstance(header, dict)
-        assert len(header) > 0
+        assert header.get("author", None) != None
+        assert header.get("addressee", None) != None
+        assert header.get("place", None) != None
+        assert header.get("date", None) != None
+        assert header.get("year", None) != None

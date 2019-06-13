@@ -7,24 +7,25 @@ import unicodedata
 
 class TeiDoc:
 
-    def __init__(self, xml, parser=etree.XMLParser(attribute_defaults=True)):
+    def __init__(self, xml, parser=etree.XMLParser(attribute_defaults=True), nsmap={"tei" : "http://www.tei-c.org/ns/1.0",
+                 "vg": "http://www.vangoghletters.org/ns/"}):
+        self.nsmap = nsmap
         self.xml = etree.parse(xml, parser)
         self.layers = self.text()
 
     def metadata(self):
         """
-        Extract metadata from the TEI.
+        Extract author, addressee, place the letter was written, date of writing
         returns: dict
         """
-        nsmap = {"tei" : "http://www.tei-c.org/ns/1.0",
-                 "vg": "http://www.vangoghletters.org/ns/"}
-        # header_tree = etree.ElementTree(self.xml.find("{http://www.tei-c.org/ns/1.0}sourceDesc"))
-        lh = self.xml.getroot().xpath("//tei:teiHeader//tei:sourceDesc/vg:letDesc/vg:letHeading", namespaces=nsmap)[0]
+        lh = self.xml.getroot().xpath("//tei:teiHeader//tei:sourceDesc/vg:letDesc/vg:letHeading", namespaces=self.nsmap)[0]
         metadata = {"author": lh[0].text,
                     "addressee": lh[1].text,
                     "place": lh[2].text,
                     "date": lh[3].text,
+                    "year": int(lh[3].text.split()[-1])
         }
+
         return metadata
 
     def mentions(self):
