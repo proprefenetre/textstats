@@ -1,3 +1,4 @@
+#+OPTIONS: ^:nil
 * Tekstkenmerken
 ** Topic modelling
 *** READ Latent Dirichlet Allocation ([[http://www.matthewjockers.net/2011/09/29/the-lda-buffet-is-now-open-or-latent-dirichlet-allocation-for-english-majors/][LDA]])
@@ -21,6 +22,13 @@ freq. dists. &c
 ** Spacy
 *** DONE doet Spacy meer dan alleen tagging & NER?
 Nee
+** Scikit-learn
+*** decomposition
+- NMF,
+- LatentDirichletAllocation,
+- TruncatedSVD
+*** feature_extraction
+- CountVectorizer
 * Preprocessing
 - [X] +strip everything+
 - [ ] stick to normalization of unicode characters & let SpaCy do the rest
