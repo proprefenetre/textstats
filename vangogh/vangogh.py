@@ -29,24 +29,31 @@ def texts(path, nlp, n=False):
 
 corpus_dir = "/home/niels/projects/vangogh/letters/"
 
-nlp = spacy.load('nl_core_news_sm')
+nlp = spacy.load("nl_core_news_sm")
 
 stop_words = stops_nl | stops_en | stops_fr
 
 tokenized_texts = []
 for doc in texts(corpus_dir, nlp, n=50):
-    tokenized_texts.append([t.lemma_ for t in doc if not t.is_stop \
-                            and not t.is_punct \
-                            and not t.like_num \
-                            and not t.is_space \
-                            and t.lemma_ not in stop_words])
+    tokenized_texts.append(
+        [
+            t.lemma_
+            for t in doc
+            if not t.is_stop
+            and not t.is_punct
+            and not t.like_num
+            and not t.is_space
+            and t.lemma_ not in stop_words
+        ]
+    )
 
+
+corp = VGCorpus(tokenized_texts)
 # d = corpora.Dictionary(tokenized_texts)
 # d.save(f"{corpus_dir}vg_50.dict")
+d = corpora.Dictionary.load(f"{corpus_dir}vg_50.dict")
 # corpus = [d.doc2bow(t) for t in tokenized_texts]
 # corpora.MmCorpus.serialize(f"{corpus_dir}vg_50.mm", corpus)
-
-d = corpora.Dictionary.load(f"{corpus_dir}vg_50.dict")
 corpus = corpora.MmCorpus(f"{corpus_dir}vg_50.mm")
 
 tfidf = models.TfidfModel(corpus)
