@@ -12,7 +12,7 @@ from teidoc import TeiDoc
 class VGCorpus:
     def __init__(self, texts):
         self.texts = texts
-        self.dictionary = corpora.Dictionary(self.texts)
+        self.dictionary = corpora.Dictionary(texts)
 
     def __iter__(self):
         for d in self.texts:
@@ -24,39 +24,42 @@ def texts(path, nlp, n=False):
     if n:
         corpus = islice(corpus, n)
     for d in corpus:
-        yield nlp(TeiDoc(d.as_posix()).preprocess())
+        td = TeiDoc(d.as_posix())
+        if td.lang() == 'nl':
+            yield (td, nlp(td.processed_text()))
 
 
 corpus_dir = "/home/niels/projects/vangogh/letters/"
 
-nlp = spacy.load("nl_core_news_sm")
+STOP_WORDS = stops_nl | stops_en | stops_fr
 
-stop_words = stops_nl | stops_en | stops_fr
-
+documents = []
 tokenized_texts = []
-for doc in texts(corpus_dir, nlp, n=50):
+for doc in texts(corpus_dir, spacy.load("nl_core_news_sm")):
+    documents.append(doc[0])
     tokenized_texts.append(
         [
             t.lemma_
-            for t in doc
+            for t in doc[1]
             if not t.is_stop
+            and t.lemma_ not in STOP_WORDS
             and not t.is_punct
             and not t.like_num
             and not t.is_space
-            and t.lemma_ not in stop_words
         ]
     )
 
 
 corp = VGCorpus(tokenized_texts)
-# d = corpora.Dictionary(tokenized_texts)
-# d.save(f"{corpus_dir}vg_50.dict")
-d = corpora.Dictionary.load(f"{corpus_dir}vg_50.dict")
-# corpus = [d.doc2bow(t) for t in tokenized_texts]
-# corpora.MmCorpus.serialize(f"{corpus_dir}vg_50.mm", corpus)
-corpus = corpora.MmCorpus(f"{corpus_dir}vg_50.mm")
 
-tfidf = models.TfidfModel(corpus)
-c_tfidf = tfidf[corpus]
-lsi = models.LsiModel(c_tfidf, id2word=d, num_topics=5)
+tfidf = models.TfidfModel(corp)
+c_tfidf = tfidf[corp]
+
+lsi = models.LsiModel(c_tfidf, id2word=corp.dictionary, num_topics=5)
 c_lsi = lsi[c_tfidf]
+
+for doc in zip(documents, c_lsi):
+    md = doc[0].metadata()
+    # fail: doc is een np.array
+    topic = lsi.show_topic([max(doc[1], key=lambda x: x[1])[0]])
+    print(md['letter_id'], topic)

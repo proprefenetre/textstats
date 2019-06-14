@@ -20,6 +20,7 @@ class TestTeiDoc:
         letter = td.TeiDoc("/home/niels/projects/vangogh/letters/let001.xml")
         header = letter.metadata()
         assert isinstance(header, dict)
+        assert header.get("letter_id", None) != None
         assert header.get("author", None) != None
         assert header.get("addressee", None) != None
         assert header.get("place", None) != None

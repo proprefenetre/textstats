@@ -44,8 +44,11 @@ class TeiDoc:
         self.xml = etree.parse(xml, parser)
 
     def metadata(self):
-        lh = self.xml.xpath("//tei:teiHeader//tei:sourceDesc/vg:letDesc/vg:letHeading", namespaces=self.nsmap,)[0]
+        lett_id  = self.xml.xpath("//tei:teiHeader//tei:sourceDesc/vg:letDesc/vg:letIdentifier//tei:idno/text()", namespaces=self.nsmap)[0]
+
+        lh = self.xml.xpath("//tei:teiHeader//tei:sourceDesc/vg:letDesc/vg:letHeading", namespaces=self.nsmap)[0]
         metadata = {
+            "letter_id": lett_id,
             "author": lh[0].text,
             "addressee": lh[1].text,
             "place": lh[2].text,
