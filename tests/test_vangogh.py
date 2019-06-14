@@ -3,30 +3,38 @@ from vangogh import teidoc as td
 
 class TestTeiDoc:
 
-    letter = td.TeiDoc(f"/home/niels/projects/vangogh/letters/let001.xml")
-    layers = letter.text()
-
     def test_teidoc(self):
-        assert isinstance(self.letter, td.TeiDoc)
-        assert hasattr(self.letter, 'xml')
-        assert hasattr(self.letter, 'layers')
-
-    def test_layers(self):
-        assert isinstance(self.layers, dict)
-        assert len(self.layers) == 3
-        assert all(key in self.layers for key in ["original", "translation", "notes"])
+        letter = td.TeiDoc("/home/niels/projects/vangogh/letters/let001.xml")
+        assert isinstance(letter, td.TeiDoc)
 
     def test_text_extraction(self):
-        assert all(isinstance(v, str) for v in self.layers.values())
-        assert all(len(v) > 0 for v in self.layers.values())
-        text = self.letter.preprocess()
-        assert isinstance(text, str)
+        letter = td.TeiDoc("/home/niels/projects/vangogh/letters/let001.xml")
+        assert letter.text() is not None
+        assert isinstance(letter.text(), str)
+        assert letter.processed_text() is not None
+        assert isinstance(letter.processed_text(), str)
+
+        assert letter.text() != letter.processed_text()
 
     def test_header_extraction(self):
-        header = self.letter.metadata()
+        letter = td.TeiDoc("/home/niels/projects/vangogh/letters/let001.xml")
+        header = letter.metadata()
         assert isinstance(header, dict)
         assert header.get("author", None) != None
         assert header.get("addressee", None) != None
         assert header.get("place", None) != None
         assert header.get("date", None) != None
         assert header.get("year", None) != None
+
+    def test_name_extraction(self):
+        letter = td.TeiDoc("/home/niels/projects/vangogh/letters/let001.xml")
+        names = letter.mentions()
+        assert isinstance(names, list)
+        for n in names:
+            assert len(n) == 3
+
+    def test_language_detection(self):
+        lett_nl = td.TeiDoc("/home/niels/projects/vangogh/letters/let001.xml")
+        lett_fr = td.TeiDoc(f"/home/niels/projects/vangogh/letters/let571.xml")
+        assert lett_nl.lang() == 'nl'
+        assert lett_fr.lang() == 'fr'
