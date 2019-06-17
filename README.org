@@ -8,8 +8,7 @@
 - [ ] average word length
 - [ ] average sentence length
 - [ ] measures of complexity,
-- [ ] potential key words (KWIC?)
-- [ ] words with relatively high term frequency (tf-idf)
+- [X] words with relatively high term frequency (tf-idf)
 - [ ] collocations
 - [ ] n-grams
 ** Preprocessing

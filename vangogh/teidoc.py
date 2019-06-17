@@ -47,17 +47,15 @@ class TeiDoc:
 
     def metadata(self):
         # lett_id  = {t.get("type"): t.text for t in self.xml.xpath("//tei:teiHeader//tei:sourceDesc/vg:letDesc/vg:letIdentifier//tei:idno", namespaces=self.nsmap)}
-        lett_id  = self.xml.xpath("//tei:teiHeader//tei:sourceDesc/vg:letDesc/vg:letIdentifier//tei:idno[@type=\"jlb\"]", namespaces=self.nsmap)[0].text
+        let_id  = self.xml.xpath("//tei:teiHeader//tei:sourceDesc/vg:letDesc/vg:letIdentifier//tei:idno[@type=\"jlb\"]", namespaces=self.nsmap)[0].text
         lh = self.xml.xpath("//tei:teiHeader//tei:sourceDesc/vg:letDesc/vg:letHeading", namespaces=self.nsmap)[0]
         metadata = {
-            "id": lh,
+            "id": "let" + let_id if "RM" not in let_id else let_id,
             "author": lh[0].text,
             "addressee": lh[1].text,
             "place": lh[2].text,
             "date": lh[3].text,
-            "year": int(lh[3].text.split()[-1]),
         }
-
         return metadata
 
     def mentions(self):
@@ -68,7 +66,7 @@ class TeiDoc:
         return names
 
     def text(self):
-        # remove textualNotes
+        # TODO: don't remove textualNotes (it changes the tree permanently)
         ot = self.xml.xpath("//tei:text//tei:div[@type='original']", namespaces=self.nsmap)[0]
         try:
             ot.remove(ot.xpath(".//tei:div[@type='textualNotes']", namespaces=self.nsmap)[0])
@@ -96,7 +94,7 @@ class TeiDoc:
             text = self._rm_punct(text)
         if diac:
             text = self._rm_diacritics(text)
-        return text
+        return text.strip()
 
     def lang(self):
         return langdetect.detect(self.text())

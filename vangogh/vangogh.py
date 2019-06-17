@@ -6,60 +6,77 @@ from spacy.lang.nl import STOP_WORDS as stops_nl
 from spacy.lang.en import STOP_WORDS as stops_en
 from spacy.lang.fr import STOP_WORDS as stops_fr
 from pathlib import Path
+import pickle
 from teidoc import TeiDoc
 
 
-class VGCorpus:
-    def __init__(self, texts):
-        self.texts = texts
-        self.dictionary = corpora.Dictionary(texts)
+CORPUS_DIR = "/home/niels/projects/vangogh/letters/"
+MODEL_DIR =  "/home/niels/projects/vangogh/vangogh/models/"
 
-    def __iter__(self):
-        for d in self.texts:
-            yield self.dictionary.doc2bow(d)
+nlp = spacy.load("nl_core_news_sm") # geen word vectors
 
 
-def texts(path, nlp, n=False):
-    corpus = Path(path).glob("let*.xml")
+def get_texts(path, nlp, n=False, languages=['nl']):
+    corpus = Path(path).glob("*.xml")
     if n:
         corpus = islice(corpus, n)
     for d in corpus:
         td = TeiDoc(d.as_posix())
-        if td.lang() == 'nl':
-            yield (td, nlp(td.processed_text()))
+        if td.lang() not in languages:
+            continue
+        yield (td.metadata()["id"], nlp(td.processed_text()))
 
 
-corpus_dir = "/home/niels/projects/vangogh/letters/"
+processed_texts_path = Path(MODEL_DIR + "processed_texts_all_nl.pickle")
 
-STOP_WORDS = stops_nl | stops_en | stops_fr
+if processed_texts_path.exists():
+    docs, texts = pickle.load(processed_texts_path.open("rb"))
+    print("pickle loaded")
+else:
+    docs, texts = zip(*get_texts(CORPUS_DIR, nlp))
+    pickle.dump((docs, texts), processed_texts_path.open("wb"))
+    print("pickle dumped")
 
-documents = []
+
 tokenized_texts = []
-for doc in texts(corpus_dir, spacy.load("nl_core_news_sm")):
-    documents.append(doc[0])
-    tokenized_texts.append(
-        [
-            t.lemma_
-            for t in doc[1]
-            if not t.is_stop
-            and t.lemma_ not in STOP_WORDS
-            and not t.is_punct
-            and not t.like_num
-            and not t.is_space
-        ]
-    )
+for doc in texts:
+    tokenized_texts.append([t.lemma_ for t in doc if not t.is_stop
+                       and t.lemma_ not in stops_nl | stops_en | stops_fr
+                       and not t.is_punct
+                       and not t.is_space])
 
 
-corp = VGCorpus(tokenized_texts)
+if Path(MODEL_DIR + "vg_dict_all_nl.dict").exists():
+    vg_dict = corpora.Dictionary.load(MODEL_DIR + "vg_dict_all_nl.dict")
+    print("dict loaded")
+else:
+    vg_dict = corpora.Dictionary(tokenized_texts)
+    vg_dict.save(MODEL_DIR + "vg_dict_all_nl.dict")
+    print("dict saved")
 
-tfidf = models.TfidfModel(corp)
-c_tfidf = tfidf[corp]
 
-lsi = models.LsiModel(c_tfidf, id2word=corp.dictionary, num_topics=5)
-c_lsi = lsi[c_tfidf]
+class VGCorpus:
+    def __init__(self, tokens):
+        self.dictionary = corpora.Dictionary(tokens)
+        self.tokens = tokens
 
-for doc in zip(documents, c_lsi):
-    md = doc[0].metadata()
-    # fail: doc is een np.array
-    topic = lsi.show_topic([max(doc[1], key=lambda x: x[1])[0]])
-    print(md['letter_id'], topic)
+    def __iter__(self):
+        for d in self.tokens:
+            yield self.dictionary.doc2bow(d)
+
+
+vg_dict.save(MODEL_DIR + "vg_dict_all_nl.dict")
+corpus = VGCorpus(tokenized_texts)
+
+# tfidf = models.TfidfModel(corpus)
+# c_tfidf = tfidf[corpus]
+
+# lsi = models.LsiModel(c_tfidf, id2word=corpus.dictionary, num_topics=5)
+# c_lsi = lsi[c_tfidf] # apply LSI to the BoW vectors
+
+# lda = models.LdaModel(c_tfidf, id2word=corp.dictionary, )
+
+# for doc in zip([text[0] for text in texts], c_lsi):
+#     md = doc[0].metadata()
+#     topic = lsi.show_topic([max(doc[1], key=lambda x: x[1])[0]])
+#     print(md["id"], topic)
