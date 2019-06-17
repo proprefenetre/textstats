@@ -34,21 +34,23 @@ PUNCT_MAP = {
     "/"     : ",",
 }
 
+
 NSMAP = {"tei": "http://www.tei-c.org/ns/1.0",
          "vg": "http://www.vangoghletters.org/ns/",
 }
 
 class TeiDoc:
-    def __init__(self, xml, parser=etree.XMLParser(), nsmap=NSMAP):
+    def __init__(self, xml, parser=etree.XMLParser(), punct=PUNCT_MAP, nsmap=NSMAP):
+        self.punct = punct
         self.nsmap = nsmap
         self.xml = etree.parse(xml, parser)
 
     def metadata(self):
-        lett_id  = self.xml.xpath("//tei:teiHeader//tei:sourceDesc/vg:letDesc/vg:letIdentifier//tei:idno/text()", namespaces=self.nsmap)[0]
-
+        # lett_id  = {t.get("type"): t.text for t in self.xml.xpath("//tei:teiHeader//tei:sourceDesc/vg:letDesc/vg:letIdentifier//tei:idno", namespaces=self.nsmap)}
+        lett_id  = self.xml.xpath("//tei:teiHeader//tei:sourceDesc/vg:letDesc/vg:letIdentifier//tei:idno[@type=\"jlb\"]", namespaces=self.nsmap)[0].text
         lh = self.xml.xpath("//tei:teiHeader//tei:sourceDesc/vg:letDesc/vg:letHeading", namespaces=self.nsmap)[0]
         metadata = {
-            "letter_id": lett_id,
+            "id": lh,
             "author": lh[0].text,
             "addressee": lh[1].text,
             "place": lh[2].text,
@@ -76,7 +78,7 @@ class TeiDoc:
         return ''.join(text for text in ot.xpath(".//text()"))
 
     def _rm_punct(self, text):
-        for k, v in PUNCT_MAP.items():
+        for k, v in self.punct.items():
             text = re.sub(k, v, text)
         return text
 

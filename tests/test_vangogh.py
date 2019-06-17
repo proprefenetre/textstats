@@ -5,34 +5,42 @@ class TestTeiDoc:
 
     def test_teidoc(self):
         letter = td.TeiDoc("/home/niels/projects/vangogh/letters/let001.xml")
-        assert isinstance(letter, td.TeiDoc)
+        rm = td.TeiDoc("/home/niels/projects/vangogh/letters/RM01.xml")
+        for d in [letter, rm]:
+            assert isinstance(d, td.TeiDoc)
 
     def test_text_extraction(self):
         letter = td.TeiDoc("/home/niels/projects/vangogh/letters/let001.xml")
-        assert letter.text() is not None
-        assert isinstance(letter.text(), str)
-        assert letter.processed_text() is not None
-        assert isinstance(letter.processed_text(), str)
+        rm = td.TeiDoc("/home/niels/projects/vangogh/letters/RM01.xml")
+        for d in [letter, rm]:
+            assert d.text() is not None
+            assert isinstance(d.text(), str)
+            assert d.processed_text() is not None
+            assert isinstance(d.processed_text(), str)
 
         assert letter.text() != letter.processed_text()
 
     def test_header_extraction(self):
         letter = td.TeiDoc("/home/niels/projects/vangogh/letters/let001.xml")
-        header = letter.metadata()
-        assert isinstance(header, dict)
-        assert header.get("letter_id", None) != None
-        assert header.get("author", None) != None
-        assert header.get("addressee", None) != None
-        assert header.get("place", None) != None
-        assert header.get("date", None) != None
-        assert header.get("year", None) != None
+        rm = td.TeiDoc("/home/niels/projects/vangogh/letters/RM01.xml")
+        for d in [letter, rm]:
+            header = d.metadata()
+            assert isinstance(header, dict)
+            assert header.get("id", None) != None
+            assert header.get("author", None) != None
+            assert header.get("addressee", None) != None
+            assert header.get("place", None) != None
+            assert header.get("date", None) != None
+            assert header.get("year", None) != None
 
     def test_name_extraction(self):
         letter = td.TeiDoc("/home/niels/projects/vangogh/letters/let001.xml")
-        names = letter.mentions()
-        assert isinstance(names, list)
-        for n in names:
-            assert len(n) == 3
+        rm = td.TeiDoc("/home/niels/projects/vangogh/letters/RM01.xml")
+        for d in [letter, rm]:
+            names = d.mentions()
+            assert isinstance(names, list)
+            for n in names:
+                assert len(n) == 3
 
     def test_language_detection(self):
         lett_nl = td.TeiDoc("/home/niels/projects/vangogh/letters/let001.xml")

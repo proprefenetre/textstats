@@ -1,27 +1,27 @@
 #+OPTIONS: ^:nil
 * Tekstkenmerken
 ** Topic modelling
-*** READ Latent Dirichlet Allocation ([[http://www.matthewjockers.net/2011/09/29/the-lda-buffet-is-now-open-or-latent-dirichlet-allocation-for-english-majors/][LDA]])
-*** TODO Clustering?
-** Sentiment analysis
-** Statistics
-- average word length
-- average sentence length
-- measures of complexity,
-- potential key words (KWIC?)
-- words with relatively high term frequency (tf-idf)
-- collocations
-- n-grams
-* Tools/libraries
-** lxml
-- ETXpath → namespaces
-** NLTK
-freq. dists. &c
-** Gensim
-- topic modelling
-** Spacy
-*** DONE doet Spacy meer dan alleen tagging & NER?
-Nee
+*** Gensim
+*** TODO Clusteren o.b.v. topics
+** TODO Sentiment analysis
+** TODO Statistics
+- [ ] average word length
+- [ ] average sentence length
+- [ ] measures of complexity,
+- [ ] potential key words (KWIC?)
+- [ ] words with relatively high term frequency (tf-idf)
+- [ ] collocations
+- [ ] n-grams
+** Preprocessing
+*** DONE Language recognition
+- langdetect
+*** XML
+- [X] lxml
+- [-] text layers
+- [ ] generic
+*** Tokenizing & Tagging
+- Spacy
+- Serializing
 ** Scikit-learn
 *** decomposition
 - NMF
@@ -29,9 +29,25 @@ Nee
 - TruncatedSVD
 *** feature_extraction
 - CountVectorizer
-* Preprocessing
-- [X] +strip everything+
-- [ ] stick to normalization of unicode characters & let SpaCy do the rest
-* Misc
-** NB <c type="shy"> → afbreekstreepje dat verdwijnt in weergave [[http://www.vangoghletters.org/ns/vgodd.xsd][(schema)]]
-I.e. de apostrofen & aanhalingstekens handmatig normaliseren ()
+*** examples
+#+BEGIN_SRC python
+    vectorizer = CountVectorizer(min_df=5, max_df=0.9, stop_words='english', lowercase=True, token_pattern='[a-zA-Z\-][a-zA-Z\-]{2,}')
+    data_vectorized = vectorizer.fit_transform(wines["processed_description"])
+
+    lda = LatentDirichletAllocation(n_components=NUM_TOPICS, max_iter=10, learning_method='online',verbose=True)
+    data_lda = lda.fit_transform(data_vectorized)
+
+    bivectorizer = CountVectorizer(min_df=5, max_df=0.9, stop_words='english', lowercase=True, ngram_range=(1,2))
+    bigram_vectorized = bivectorizer.fit_transform(wines["processed_description"])
+#+END_SRC
+* AFSPRAAK emit JSON or inject XML? @Hennie
+SCHEDULED: <2019-06-18 Tue>
+* XML
+- *letters* (let***.xml) and *related documents* (RM***.xml),
+- letter-level metadata (title, number, date, correspondents,
+etc.),
+- full transcription,
+- translation, the notes,
+- textual notes,
+- information that connects transcribed pages with images of those pages
+  (facsimile elements).
