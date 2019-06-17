@@ -60,6 +60,7 @@ for doc in texts:
 from sklearn.feature_extraction.text import CountVectorizer
 docs = [" ".join(t) for t in tokenized_texts]
 cv = CountVectorizer(max_df=.85, stop_words=stops)
+word_count_vector = cv.fit_transform(docs)
 # if Path(MODEL_DIR + "vg_dict_all_nl.dict").exists():
 #     vg_dict = corpora.Dictionary.load(MODEL_DIR + "vg_dict_all_nl.dict")
 #     print("dict loaded")
