@@ -6,9 +6,9 @@
 ** TODO Sentiment analysis
 ** TODO Statistics
 - [ ] average word length
-- [ ] average sentence length
+- [X] average sentence length
 - [ ] measures of complexity,
-- [X] words with relatively high term frequency (tf-idf)
+- [ ] words with relatively high term frequency (tf-idf)
 - [ ] collocations
 - [ ] n-grams
 ** Preprocessing
