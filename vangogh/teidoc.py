@@ -66,7 +66,7 @@ class TeiDoc:
         }
         return metadata
 
-    def mentions(self):
+    def entities(self):
         "Extract names of people mentioned in the letters"
         tree = etree.fromstring(self.xml)
         names = []
