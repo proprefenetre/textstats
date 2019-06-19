@@ -78,13 +78,22 @@ class TeiDoc:
 
     def text(self):
         tree = etree.fromstring(self.xml)
-        ot = tree.xpath(
-            "//tei:text//tei:div[@type='original']", namespaces=self.nsmap
-        )[0]
-        ot.remove(
-            ot.xpath(".//tei:div[@type='textualNotes']", namespaces=self.nsmap)[0]
-        )
-        return "".join(text for text in ot.xpath(".//text()"))
+        # ot = tree.xpath(
+        #     "//tei:text//tei:div[@type='original']", namespaces=self.nsmap
+        # )[0]
+        # ot.remove(
+        #     ot.xpath(".//tei:div[@type='textualNotes']", namespaces=self.nsmap)[0]
+        # )
+        # return "".join(text for text in ot.xpath(".//text()"))
+        text = []
+        for d in tree.xpath("//tei:text//tei:body//tei:div", namespaces=self.nsmap):
+            layer = []
+            for elt in d:
+                if elt.tag == f"{{{self.nsmap['tei']}}}div":
+                    continue
+                layer.append("".join(elt.xpath(".//text()")))
+            text.append("".join(layer))
+        return text
 
     def _rm_punct(self, text):
         for k, v in self.punct.items():
@@ -100,7 +109,7 @@ class TeiDoc:
         )
 
     def processed_text(self, punct=True, diac=True):
-        text = self.text()
+        text = self.text()[0]
         if punct:
             text = self._rm_punct(text)
         if diac:

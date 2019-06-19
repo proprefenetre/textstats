@@ -19,46 +19,76 @@ nlp = spacy.load("nl_core_news_sm") # sm → geen word vectors
 # nlp_fr = spacy.load("fr_core ... ")
 
 
-def get_texts(path, nlp, n=False, languages=['nl']):
-    corpus = Path(path).glob("*.xml")
-    if n:
-        corpus = islice(corpus, n)
-    for d in corpus:
-        td = TeiDoc(d.as_posix())
-        if td.lang() not in languages:
-            continue
-        yield (td.metadata(), nlp(td.processed_text()))
+class VGLetter:
+    def __init__(self, id, language, text):
+        self.id = id
+        self.language = language
+        self.text = text
+
+    def wordcount(self):
+        return len(self.text.split())
+
+    def avg_sentence_length(self):
+        return sum([len(s.text.split()) for s in self.text.sents]) / len(self.text.sents)
 
 
-processed_texts_path = Path(MODEL_DIR + "processed_texts_all_nl.pickle")
+class VGCorpus:
+    def __init__(self, path, languages=["nl"], n=None):
+        self.path = path
+        # TODO load appropriate spacy models for each language
+        self.languages = languages
+        self.n = n
 
-if processed_texts_path.exists():
-    docs, texts = pickle.load(processed_texts_path.open("rb"))
-    print("pickle loaded")
-else:
-    docs, texts = zip(*get_texts(CORPUS_DIR, nlp))
-    pickle.dump((docs, texts), processed_texts_path.open("wb"))
-    print("pickle dumped")
+    def get_xml(self):
+        corpus = Path(self.path).glob("*.xml")
+        if self.n:
+            corpus = islice(corpus, self.n)
+        for p in corpus:
+            td = TeiDoc(p.as_posix())
+            yield VGLetter(td.metadata()["id"], td.lang(), nlp(td.processed_text()))
+
+    def avg_sentence_length(self, texts=None):
+        if not texts:
+            texts = [txt for _, _, txt in self.get_xml()]
+        else:
+            sentences = list(chain(*[d.sents for d in texts]))
+        avg_sent_length = sum([len(s.text.split()) for s in sentences]) / len(sentences)
+
+
+# def get_texts(path, nlp, n=False, languages=['nl']):
+#     corpus = Path(path).glob("*.xml")
+#     if n:
+#         corpus = islice(corpus, n)
+#     for d in corpus:
+#         td = TeiDoc(d.as_posix())
+#         if td.lang() not in languages:
+#             continue
+#         yield (td.metadata(), nlp(td.processed_text()))
+
+
+# processed_texts_path = Path(MODEL_DIR + "processed_texts_all_nl.pickle")
+
+# if processed_texts_path.exists():
+#     docs, texts = pickle.load(processed_texts_path.open("rb"))
+#     print("pickle loaded")
+# else:
+#     docs, texts = zip(*get_texts(CORPUS_DIR, nlp))
+#     pickle.dump((docs, texts), processed_texts_path.open("wb"))
+#     print("pickle dumped")
 
 # sentence lenght
-sentences = list(chain(*[d.sents for d in texts]))
-avg_sent_length = sum([len(s.text.split()) for s in sentences]) / len(sentences)
 
-sent_length_letters = {}
-for let, text in zip(docs, texts):
-    sents = [s.text.split() for s in text.sents]
-    avg_length = sum([len(s) for s in sents]) / len(sents)
-    sent_length_letters[let] = avg_length
+# sentences = list(chain(*[d.sents for d in texts]))
+# avg_sent_length = sum([len(s.text.split()) for s in sentences]) / len(sentences)
+
+# sent_length_letters = {}
+# for let, text in zip(docs, texts):
+#     sents = [s.text.split() for s in text.sents]
+#     avg_length = sum([len(s) for s in sents]) / len(sents)
+#     sent_length_letters[let] = avg_length
 
 
-stopwords = stops_nl | stops_en | stops_fr
-
-tokenized_texts = []
-for doc in texts:
-    tokenized_texts.append([t.lemma_ for t in doc if not t.is_stop
-                       and t.lemma_ not in stopwords
-                       and not t.is_punct
-                       and not t.is_space])
+# stopwords = stops_nl | stops_en | stops_fr
 
 from sklearn.feature_extraction.text import CountVectorizer
 docs = [" ".join(t) for t in tokenized_texts]
@@ -74,7 +104,7 @@ cv = CountVectorizer(max_df=.85, stop_words=stopwords)
 #     print("dict saved")
 
 
-# class VGCorpus:
+# class CorpusStream:
 #     def __init__(self, tokens):
 #         self.dictionary = corpora.Dictionary(tokens)
 #         self.tokens = tokens
@@ -85,7 +115,7 @@ cv = CountVectorizer(max_df=.85, stop_words=stopwords)
 
 
 # vg_dict.save(MODEL_DIR + "vg_dict_all_nl.dict")
-# corpus = VGCorpus(tokenized_texts)
+# corpus = CorpusStream(tokenized_texts)
 
 # # tfidf = models.TfidfModel(corpus)
 # # c_tfidf = tfidf[corpus]

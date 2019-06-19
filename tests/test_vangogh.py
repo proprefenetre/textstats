@@ -13,10 +13,12 @@ class TestTeiDoc:
 
     def test_text_extraction(self):
         letter = td.TeiDoc("/Users/niels/projects/vangogh/letters/let001.xml")
+        assert len(letter.text()) == 4
         rm = td.TeiDoc("/Users/niels/projects/vangogh/letters/RM01.xml")
+        assert len(rm.text()) == 3
         for d in [letter, rm]:
             assert d.text() is not None
-            assert isinstance(d.text(), str)
+            assert isinstance(d.text(), list)
             assert d.processed_text() is not None
             assert isinstance(d.processed_text(), str)
 
@@ -38,13 +40,13 @@ class TestTeiDoc:
         letter = td.TeiDoc("/Users/niels/projects/vangogh/letters/let001.xml")
         rm = td.TeiDoc("/Users/niels/projects/vangogh/letters/RM01.xml")
         for d in [letter, rm]:
-            names = d.mentions()
+            names = d.entities()
             assert isinstance(names, list)
             for n in names:
                 assert len(n) == 3
 
-    def test_language_detection(self):
-        lett_nl = td.TeiDoc("/Users/niels/projects/vangogh/letters/let001.xml")
-        lett_fr = td.TeiDoc("/Users/niels/projects/vangogh/letters/let571.xml")
-        assert lett_nl.lang() == 'nl'
-        assert lett_fr.lang() == 'fr'
+    # def test_language_detection(self):
+    #     lett_nl = td.TeiDoc("/Users/niels/projects/vangogh/letters/let001.xml")
+    #     lett_fr = td.TeiDoc("/Users/niels/projects/vangogh/letters/let571.xml")
+    #     assert lett_nl.lang() == 'nl'
+    #     assert lett_fr.lang() == 'fr'
