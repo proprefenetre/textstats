@@ -23,16 +23,16 @@ class VGLetter:
         self.id = id
         self.language = language
         self.text = text
+        self.doc = NLP_NL(text)
 
     def wordcount(self):
         return len(self.text.split())
 
     def sentcount(self):
-        return len(self.text.sents)
+        return len(list(self.doc.sents))
 
     def avg_sentence_length(self):
-        doc = NLP_NL(self.text)
-        return sum([len(s.text.split()) for s in doc.sents]) / len(doc.sents)
+        return sum((len(s.text.split()) for s in self.doc.sents)) / len(list(self.doc.sents))
 
 
 class VGCorpus:
@@ -53,8 +53,8 @@ class VGCorpus:
             yield VGLetter(td.metadata()["id"], td.lang(), td.processed_text())
 
     def avg_sentence_length(self):
-        sentences = list(chain(*(d.sents for d in (NLP_NL(txt) for _, _, txt in self.get_letters()))))
-        avg_sent_length = sum([len(s.text.split()) for s in sentences]) / len(sentences)
+        sentences = list(chain(*(d.sents for d in (letter.doc for letter in self.get_letters()))))
+        avg_sent_length = sum((len(s.text.split()) for s in sentences)) / len(sentences)
 
     def frequencies(self):
         freq = {}
@@ -67,8 +67,8 @@ class VGCorpus:
                 "keywords": [],
             }
 
-        total_words = sum(l["n_words"] for l in freq)
-        total_sentences = sum(l["n_sentences"] for l in freq)
+        total_words = sum(l["n_words"] for l in freq.values())
+        total_sentences = sum(l["n_sentences"] for l in freq.values())
         total_letters = len(freq)
         avg_words_letter = total_words / total_letters
         avg_sentences_letter =  total_sentences / total_letters
