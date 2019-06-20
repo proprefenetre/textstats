@@ -8,10 +8,10 @@ from spacy.lang.en import STOP_WORDS as stops_en
 from spacy.lang.fr import STOP_WORDS as stops_fr
 from pathlib import Path
 
-from teidoc import TeiDoc
+from vangogh.teidoc import TeiDoc
 
 
-CORPUS_DIR = "/home/niels/projects/vangogh/letters/"
+CORPUS_DIR = "/Users/niels/projects/vangogh/letters/"
 # MODEL_DIR =  "/home/niels/projects/vangogh/vangogh/models/"
 
 nlp = spacy.load("nl_core_news_sm") # sm → geen word vectors

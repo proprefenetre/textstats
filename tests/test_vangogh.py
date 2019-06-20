@@ -1,20 +1,19 @@
 #! /usr/bin/local/python3
 
-from vangogh import teidoc as td
-
+from vangogh.teidoc import TeiDoc
 
 class TestTeiDoc:
 
     def test_teidoc(self):
-        letter = td.TeiDoc("/Users/niels/projects/vangogh/letters/let001.xml")
-        rm = td.TeiDoc("/Users/niels/projects/vangogh/letters/RM01.xml")
+        letter = TeiDoc("/Users/niels/projects/vangogh/letters/let001.xml")
+        rm = TeiDoc("/Users/niels/projects/vangogh/letters/RM01.xml")
         for d in [letter, rm]:
-            assert isinstance(d, td.TeiDoc)
+            assert isinstance(d, TeiDoc)
 
     def test_text_extraction(self):
-        letter = td.TeiDoc("/Users/niels/projects/vangogh/letters/let001.xml")
+        letter = TeiDoc("/Users/niels/projects/vangogh/letters/let001.xml")
         assert len(letter.text()) == 4
-        rm = td.TeiDoc("/Users/niels/projects/vangogh/letters/RM01.xml")
+        rm = TeiDoc("/Users/niels/projects/vangogh/letters/RM01.xml")
         assert len(rm.text()) == 3
         for d in [letter, rm]:
             assert d.text() is not None
@@ -25,8 +24,8 @@ class TestTeiDoc:
         assert letter.text() != letter.processed_text()
 
     def test_header_extraction(self):
-        letter = td.TeiDoc("/Users/niels/projects/vangogh/letters/let001.xml")
-        rm = td.TeiDoc("/Users/niels/projects/vangogh/letters/RM01.xml")
+        letter = TeiDoc("/Users/niels/projects/vangogh/letters/let001.xml")
+        rm = TeiDoc("/Users/niels/projects/vangogh/letters/RM01.xml")
         for d in [letter, rm]:
             header = d.metadata()
             assert isinstance(header, dict)
@@ -37,8 +36,8 @@ class TestTeiDoc:
             assert header.get("date", None) != None
 
     def test_name_extraction(self):
-        letter = td.TeiDoc("/Users/niels/projects/vangogh/letters/let001.xml")
-        rm = td.TeiDoc("/Users/niels/projects/vangogh/letters/RM01.xml")
+        letter = TeiDoc("/Users/niels/projects/vangogh/letters/let001.xml")
+        rm = TeiDoc("/Users/niels/projects/vangogh/letters/RM01.xml")
         for d in [letter, rm]:
             names = d.entities()
             assert isinstance(names, list)
@@ -46,16 +45,22 @@ class TestTeiDoc:
                 assert len(n) == 3
 
     def test_language_detection(self):
-        lett_nl = td.TeiDoc("/Users/niels/projects/vangogh/letters/let001.xml")
-        lett_fr = td.TeiDoc("/Users/niels/projects/vangogh/letters/let571.xml")
+        lett_nl = TeiDoc("/Users/niels/projects/vangogh/letters/let001.xml")
+        lett_fr = TeiDoc("/Users/niels/projects/vangogh/letters/let571.xml")
         assert lett_nl.lang() == 'nl'
         assert lett_fr.lang() == 'fr'
 
 import json
-from vangogh import vangogh as vg
+from vangogh.vangogh import VGCorpus
 
 class TestFreqInfo:
 
     def output_is_json(self):
-        corpus = vg.VGCorpus
-        assert json.loads
+        corpus = VGCorpus(vg.CORPUS_DIR, n=50)
+        assert isinstance(json.loads(corpus.frequencies()), dict)
+
+    def n_matters(self):
+        corpus_50 = VGCorpus(vg.CORPUS_DIR, n=50)
+        assert len(list(corpus_50.get_letters())) == 50
+        corpus_100 = VGCorpus(vg.CORPUS_DIR, n=100)
+        assert len(list(corpus_100.get_letters())) == 100
