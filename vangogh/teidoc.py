@@ -117,4 +117,4 @@ class TeiDoc:
         return text.strip()
 
     def lang(self):
-        return langdetect.detect(self.text())
+        return langdetect.detect(self.text()[0])

@@ -45,8 +45,17 @@ class TestTeiDoc:
             for n in names:
                 assert len(n) == 3
 
-    # def test_language_detection(self):
-    #     lett_nl = td.TeiDoc("/Users/niels/projects/vangogh/letters/let001.xml")
-    #     lett_fr = td.TeiDoc("/Users/niels/projects/vangogh/letters/let571.xml")
-    #     assert lett_nl.lang() == 'nl'
-    #     assert lett_fr.lang() == 'fr'
+    def test_language_detection(self):
+        lett_nl = td.TeiDoc("/Users/niels/projects/vangogh/letters/let001.xml")
+        lett_fr = td.TeiDoc("/Users/niels/projects/vangogh/letters/let571.xml")
+        assert lett_nl.lang() == 'nl'
+        assert lett_fr.lang() == 'fr'
+
+import json
+from vangogh import vangogh as vg
+
+class TestFreqInfo:
+
+    def output_is_json(self):
+        corpus = vg.VGCorpus
+        assert json.loads
