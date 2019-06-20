@@ -36,13 +36,16 @@ class VGLetter:
 
 class VGCorpus:
     def __init__(self, path, languages=["nl"], n=None):
-        self.path = path
+        self.path = Path(path)
+        if not self.path.exists():
+            raise FileNotFoundError
         # TODO load appropriate spacy models for each language
         self.languages = languages
         self.n = n
 
     def get_letters(self):
-        corpus = Path(self.path).glob("*.xml")
+        if
+        corpus = self.path.glob("*.xml")
         if self.n:
             corpus = islice(corpus, self.n)
         for p in corpus:
