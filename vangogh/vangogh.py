@@ -14,8 +14,8 @@ from vangogh.teidoc import TeiDoc
 CORPUS_DIR = "/Users/niels/projects/vangogh/letters/"
 # MODEL_DIR =  "/home/niels/projects/vangogh/vangogh/models/"
 
-nlp = spacy.load("nl_core_news_sm") # sm → geen word vectors
-nlp_fr = spacy.load("fr_core_news_md")
+NLP_NL = spacy.load("nl_core_news_sm") # sm → geen word vectors
+NLP_FR = spacy.load("fr_core_news_md")
 
 
 class VGLetter:
@@ -31,7 +31,8 @@ class VGLetter:
         return len(self.text.sents)
 
     def avg_sentence_length(self):
-        return sum([len(s.text.split()) for s in self.text.sents]) / len(self.text.sents)
+        doc = NLP_NL(self.text)
+        return sum([len(s.text.split()) for s in doc.sents]) / len(doc.sents)
 
 
 class VGCorpus:
@@ -44,22 +45,22 @@ class VGCorpus:
         self.n = n
 
     def get_letters(self):
-        if
         corpus = self.path.glob("*.xml")
         if self.n:
             corpus = islice(corpus, self.n)
         for p in corpus:
             td = TeiDoc(p.as_posix())
-            yield VGLetter(td.metadata()["id"], td.lang(), nlp(td.processed_text()))
+            yield VGLetter(td.metadata()["id"], td.lang(), td.processed_text())
 
     def avg_sentence_length(self):
-        sentences = list(chain(*(d.sents for d in (txt for _, _, txt in self.get_letters()))))
+        sentences = list(chain(*(d.sents for d in (NLP_NL(txt) for _, _, txt in self.get_letters()))))
         avg_sent_length = sum([len(s.text.split()) for s in sentences]) / len(sentences)
 
     def frequencies(self):
         freq = {}
         for l in self.get_letters():
             freq[l.id] = {
+                "language": l.language,
                 "n_words": l.wordcount(),
                 "n_sentences": l.sentcount(),
                 "avg_sentence_length": l.avg_sentence_length(),

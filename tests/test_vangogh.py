@@ -51,16 +51,22 @@ class TestTeiDoc:
         assert lett_fr.lang() == 'fr'
 
 import json
-from vangogh.vangogh import VGCorpus
+from vangogh.vangogh import VGCorpus, CORPUS_DIR
 
 class TestFreqInfo:
 
-    def output_is_json(self):
-        corpus = VGCorpus(vg.CORPUS_DIR, n=50)
+    def test_output_is_json(self):
+        corpus = VGCorpus(CORPUS_DIR, n=50)
         assert isinstance(json.loads(corpus.frequencies()), dict)
 
-    def n_matters(self):
-        corpus_50 = VGCorpus(vg.CORPUS_DIR, n=50)
-        assert len(list(corpus_50.get_letters())) == 50
-        corpus_100 = VGCorpus(vg.CORPUS_DIR, n=100)
-        assert len(list(corpus_100.get_letters())) == 100
+    def test_n_matters(self):
+        corpus_5 = VGCorpus(CORPUS_DIR, n=5)
+        assert len(list(corpus_5.get_letters())) == 5
+        corpus_10 = VGCorpus(CORPUS_DIR, n=10)
+        assert len(list(corpus_10.get_letters())) == 10
+
+    def test_letter_is_VGLetter(self):
+        letter = VGCorpus(CORPUS_DIR, n=1).get_letters()
+        assert isinstance(letter, vangogh.vangogh.VGLetter)
+        assert all(letter.hasattr(a) for a in ['id', 'language', 'text',
+                                               'wordcount', 'sentcount', 'avg_sentence_length'])
