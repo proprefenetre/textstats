@@ -42,6 +42,7 @@
 * AFSPRAAK emit JSON or inject XML? @Hennie
 SCHEDULED: <2019-06-18 Tue>
 * XML
+** Tei contains:
 - *letters* (let***.xml) and *related documents* (RM***.xml),
 - letter-level metadata (title, number, date, correspondents,
 etc.),
@@ -50,3 +51,5 @@ etc.),
 - textual notes,
 - information that connects transcribed pages with images of those pages
   (facsimile elements).
+** NB script alters the tree
+- werkt het nog met etree.tostring()?

@@ -1,3 +1,5 @@
+#! /usr/local/bin/python3
+
 from gensim import corpora, models
 from itertools import islice, chain
 from pprint import pprint
@@ -13,7 +15,8 @@ from teidoc import TeiDoc
 CORPUS_DIR = "/home/niels/projects/vangogh/letters/"
 MODEL_DIR =  "/home/niels/projects/vangogh/vangogh/models/"
 
-nlp = spacy.load("nl_core_news_sm") # geen word vectors
+nlp = spacy.load("nl_core_news_sm") # sm → geen word vectors
+# nlp_fr = spacy.load("fr_core ... ")
 
 
 def get_texts(path, nlp, n=False, languages=['nl']):
@@ -48,19 +51,20 @@ for let, text in zip(docs, texts):
     sent_length_letters[let] = avg_length
 
 
-stops = stops_nl | stops_en | stops_fr
+stopwords = stops_nl | stops_en | stops_fr
 
 tokenized_texts = []
 for doc in texts:
     tokenized_texts.append([t.lemma_ for t in doc if not t.is_stop
-                       and t.lemma_ not in stops
+                       and t.lemma_ not in stopwords
                        and not t.is_punct
                        and not t.is_space])
 
 from sklearn.feature_extraction.text import CountVectorizer
 docs = [" ".join(t) for t in tokenized_texts]
-cv = CountVectorizer(max_df=.85, stop_words=stops)
-word_count_vector = cv.fit_transform(docs)
+
+cv = CountVectorizer(max_df=.85, stop_words=stopwords)
+
 # if Path(MODEL_DIR + "vg_dict_all_nl.dict").exists():
 #     vg_dict = corpora.Dictionary.load(MODEL_DIR + "vg_dict_all_nl.dict")
 #     print("dict loaded")
