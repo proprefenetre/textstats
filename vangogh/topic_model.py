@@ -1,15 +1,18 @@
 from gensim import corpora, models
 import pickle
 
-# def get_texts(path, nlp, n=False, languages=['nl']):
-#     corpus = Path(path).glob("*.xml")
-#     if n:
-#         corpus = islice(corpus, n)
-#     for d in corpus:
-#         td = TeiDoc(d.as_posix())
-#         if td.lang() not in languages:
-#             continue
-#         yield (td.metadata(), nlp(td.processed_text()))
+# TODO: get model dir from a config file
+# MODEL_DIR =  "/home/niels/projects/vangogh/vangogh/models/"
+
+def get_texts(path, nlp, n=False, languages=['nl']):
+    corpus = Path(path).glob("*.xml")
+    if n:
+        corpus = islice(corpus, n)
+    for d in corpus:
+        td = TeiDoc(d.as_posix())
+        if td.lang() not in languages:
+            continue
+        yield (td.metadata(), nlp(td.processed_text()))
 
 
 # processed_texts_path = Path(MODEL_DIR + "processed_texts_all_nl.pickle")

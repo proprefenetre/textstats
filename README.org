@@ -1,17 +1,14 @@
 #+OPTIONS: ^:nil
 * Tekstkenmerken
-** Topic modelling
-*** Gensim
-*** TODO Clusteren o.b.v. topics
-** TODO Sentiment analysis
-** TODO Statistics
+** TODO Topic modelling
+** BEZIG Statistics
 - [ ] average word length
 - [X] average sentence length
 - [ ] measures of complexity,
 - [ ] words with relatively high term frequency (tf-idf)
 - [ ] collocations
 - [ ] n-grams
-** Preprocessing
+** DONE Preprocessing
 *** DONE Language recognition
 - langdetect
 *** XML
@@ -39,7 +36,7 @@
     bivectorizer = CountVectorizer(min_df=5, max_df=0.9, stop_words='english', lowercase=True, ngram_range=(1,2))
     bigram_vectorized = bivectorizer.fit_transform(wines["processed_description"])
 #+END_SRC
-* AFSPRAAK emit JSON or inject XML? @Hennie
+* DONE emit JSON or inject XML? @Hennie
 SCHEDULED: <2019-06-18 Tue>
 * XML
 ** Tei contains:
@@ -53,3 +50,5 @@ etc.),
   (facsimile elements).
 ** NB script alters the tree
 - werkt het nog met etree.tostring()?
+* TeiDoc mag nog iets generieker
+* Stats moeten sneller!

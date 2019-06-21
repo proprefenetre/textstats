@@ -78,13 +78,6 @@ class TeiDoc:
 
     def text(self):
         tree = etree.fromstring(self.xml)
-        # ot = tree.xpath(
-        #     "//tei:text//tei:div[@type='original']", namespaces=self.nsmap
-        # )[0]
-        # ot.remove(
-        #     ot.xpath(".//tei:div[@type='textualNotes']", namespaces=self.nsmap)[0]
-        # )
-        # return "".join(text for text in ot.xpath(".//text()"))
         text = []
         for d in tree.xpath("//tei:text//tei:body//tei:div", namespaces=self.nsmap):
             layer = []
