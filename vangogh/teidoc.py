@@ -1,8 +1,6 @@
 import langdetect
 from lxml import etree
 import re
-import string
-import sys
 import unicodedata
 
 
@@ -57,24 +55,21 @@ class TeiDoc:
             "//tei:teiHeader//tei:sourceDesc/vg:letDesc/vg:letHeading",
             namespaces=self.nsmap,
         )[0]
+        entities = []
+        for e in tree.xpath("//tei:rs", namespaces=self.nsmap):
+            entities.append(
+                (e.get("type"), e.get("key").split(), re.sub(r"\s+", r" ", e.text))
+            )
         metadata = {
-            "id": "let" + let_id if "RM" not in let_id else let_id,
+            "name": "let" + let_id if "RM" not in let_id else let_id,
             "author": lh[0].text,
             "addressee": lh[1].text,
             "place": lh[2].text,
             "date": lh[3].text,
+            "entities": entities,
         }
-        return metadata
 
-    def entities(self):
-        "Extract names of people mentioned in the letters"
-        tree = etree.fromstring(self.xml)
-        names = []
-        for e in tree.xpath("//tei:rs", namespaces=self.nsmap):
-            names.append(
-                (e.get("type"), e.get("key").split(), re.sub(r"\s+", r" ", e.text))
-            )
-        return names
+        return metadata
 
     def text(self):
         tree = etree.fromstring(self.xml)

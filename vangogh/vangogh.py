@@ -1,85 +1,41 @@
-#! /usr/local/bin/python3
-
-from itertools import islice, chain
+from itertools import islice
 import json
-import spacy
-from spacy.lang.nl import STOP_WORDS as stops_nl
-from spacy.lang.en import STOP_WORDS as stops_en
-from spacy.lang.fr import STOP_WORDS as stops_fr
 from pathlib import Path
+import pickle
+from pprint import pprint
 
-from vangogh.teidoc import TeiDoc
+from corpus import VGLetter, VGCorpus
+from teidoc import TeiDoc
 
 
 CORPUS_DIR = "/Users/niels/projects/vangogh/letters/"
-# MODEL_DIR =  "/home/niels/projects/vangogh/vangogh/models/"
-
-NLP_NL = spacy.load("nl_core_news_sm") # sm → geen word vectors
-NLP_FR = spacy.load("fr_core_news_md")
+MODELS_DIR = "/Users/niels/projects/vangogh/models/"
 
 
-class VGLetter:
-    def __init__(self, id, language, text):
-        self.id = id
-        self.language = language
-        self.text = text
-        self.doc = NLP_NL(text)
-
-    def wordcount(self):
-        return len(self.text.split())
-
-    def sentcount(self):
-        return len(list(self.doc.sents))
-
-    def avg_sentence_length(self):
-        return sum((len(s.text.split()) for s in self.doc.sents)) / len(list(self.doc.sents))
+def get_letters(corpus_path, n=False):
+    if not Path(corpus_path).exists():
+        raise FileNotFoundError
+    corpus = Path(corpus_path).glob("*.xml")
+    if n:
+        corpus = islice(corpus, n)
+    for p in corpus:
+        td = TeiDoc(p.as_posix())
+        yield VGLetter(td.metadata(), td.lang(), td.processed_text())
 
 
-class VGCorpus:
-    def __init__(self, path, languages=["nl"], n=None):
-        self.path = Path(path)
-        if not self.path.exists():
-            raise FileNotFoundError
-        # TODO load appropriate spacy models for each language
-        self.languages = languages
-        self.n = n
+def load_letters(path, n=5):
+    p = Path(path)
+    if p.exists():
+        with p.open("rb") as f:
+            letters = pickle.load(f)
+    else:
+        letters = get_letters(CORPUS_DIR, n)
+        with p.open("wb") as f:
+            pickle.dump(list(letters), f)
+    return letters
 
-    def get_letters(self):
-        corpus = self.path.glob("*.xml")
-        if self.n:
-            corpus = islice(corpus, self.n)
-        for p in corpus:
-            td = TeiDoc(p.as_posix())
-            yield VGLetter(td.metadata()["id"], td.lang(), td.processed_text())
 
-    def avg_sentence_length(self):
-        sentences = list(chain(*(d.sents for d in (letter.doc for letter in self.get_letters()))))
-        avg_sent_length = sum((len(s.text.split()) for s in sentences)) / len(sentences)
-
-    def frequencies(self):
-        freq = {}
-        for l in self.get_letters():
-            freq[l.id] = {
-                "language": l.language,
-                "n_words": l.wordcount(),
-                "n_sentences": l.sentcount(),
-                "avg_sentence_length": l.avg_sentence_length(),
-                "keywords": [],
-            }
-
-        total_words = sum(l["n_words"] for l in freq.values())
-        total_sentences = sum(l["n_sentences"] for l in freq.values())
-        total_letters = len(freq)
-        avg_words_letter = total_words / total_letters
-        avg_sentences_letter =  total_sentences / total_letters
-
-        freq["corpus"] = {
-            "n_letters": total_letters,
-            "n_words": total_words,
-            "n_sentences": total_sentences,
-            "avg_sentence_length":  self.avg_sentence_length(),
-            "avg_sentences_letter": avg_sentences_letter,
-            "avg_words_letter": avg_words_letter,
-        }
-
-        return json.dumps(freq)
+# docs = load_letters(MODELS_DIR + "vg-model-5let.pickle")
+docs = get_letters(CORPUS_DIR, n=5)
+crp = VGCorpus(list(docs))
+data1 = json.loads(crp.frequencies())
