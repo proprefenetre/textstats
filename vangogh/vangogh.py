@@ -3,9 +3,23 @@ import json
 from pathlib import Path
 import pickle
 from pprint import pprint
+from functools import wraps
+import time
 
 from corpus import VGLetter, VGCorpus
 from teidoc import TeiDoc
+
+
+def timethis(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start = time.perf_counter()
+        r = func(*args, **kwargs)
+        end = time.perf_counter()
+        print(f"{func.__module__}.{func.__name__} : {end-start}")
+        return r
+
+    return wrapper
 
 
 CORPUS_DIR = "/Users/niels/projects/vangogh/letters/"
@@ -23,19 +37,21 @@ def get_letters(corpus_path, n=False):
         yield VGLetter(td.metadata(), td.lang(), td.processed_text())
 
 
-def load_letters(path, n=5):
+@timethis
+def load_letters(path, n=False):
+    if path is None:
+        return list(get_letters(CORPUS_DIR, n))
     p = Path(path)
     if p.exists():
         with p.open("rb") as f:
             letters = pickle.load(f)
     else:
-        letters = get_letters(CORPUS_DIR, n)
+        letters = list(get_letters(CORPUS_DIR, n))
         with p.open("wb") as f:
-            pickle.dump(list(letters), f)
+            pickle.dump(letters, f)
     return letters
 
 
-# docs = load_letters(MODELS_DIR + "vg-model-5let.pickle")
-docs = get_letters(CORPUS_DIR, n=5)
-crp = VGCorpus(list(docs))
-data1 = json.loads(crp.frequencies())
+# docs = get_letters(CORPUS_DIR, n=5)
+crp = VGCorpus(load_letters(None, n=5)).frequencies()
+pprint(crp["corpus"])

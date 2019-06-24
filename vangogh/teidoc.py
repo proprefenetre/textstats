@@ -47,19 +47,22 @@ class TeiDoc:
 
     def metadata(self):
         tree = etree.fromstring(self.xml)
-        let_id = tree.xpath(
-            '//tei:teiHeader//tei:sourceDesc/vg:letDesc/vg:letIdentifier//tei:idno[@type="jlb"]',
-            namespaces=self.nsmap,
-        )[0].text
-        lh = tree.xpath(
-            "//tei:teiHeader//tei:sourceDesc/vg:letDesc/vg:letHeading",
-            namespaces=self.nsmap,
-        )[0]
+        let_id = tree.xpath('//tei:teiHeader//tei:sourceDesc/vg:letDesc/vg:letIdentifier//tei:idno[@type="jlb"]', namespaces=self.nsmap,)[0].text
+        lh = tree.xpath("//tei:teiHeader//tei:sourceDesc/vg:letDesc/vg:letHeading", namespaces=self.nsmap,)[0]
         entities = []
-        for e in tree.xpath("//tei:rs", namespaces=self.nsmap):
-            entities.append(
-                (e.get("type"), e.get("key").split(), re.sub(r"\s+", r" ", e.text))
-            )
+        try:
+            for e in tree.xpath("//tei:rs", namespaces=self.nsmap):
+                try:
+                    content = e.xpath(".//text()")[0]
+                except:
+                    print(f"leeg element -- {let_id}: {etree.tostring(e)}")
+                entities.append(
+                    (e.get("type"), e.get("key").split(), re.sub(r"\s+", r" ", content))
+                )
+        except TypeError:
+            print(f"{let_id}: {etree.tostring(e)}")
+            raise
+
         metadata = {
             "name": "let" + let_id if "RM" not in let_id else let_id,
             "author": lh[0].text,
