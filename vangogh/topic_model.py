@@ -4,7 +4,8 @@ import pickle
 # TODO: get model dir from a config file
 # MODEL_DIR =  "/home/niels/projects/vangogh/vangogh/models/"
 
-def get_texts(path, nlp, n=False, languages=['nl']):
+
+def get_texts(path, nlp, n=False, languages=["nl"]):
     corpus = Path(path).glob("*.xml")
     if n:
         corpus = islice(corpus, n)

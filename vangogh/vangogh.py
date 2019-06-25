@@ -1,5 +1,4 @@
 from itertools import islice
-import json
 from pathlib import Path
 import pickle
 from pprint import pprint

@@ -9,23 +9,18 @@
 - facsimiles (± 60Gb)
 * TODO
 - [ ] Maak het sneller!
-  + [ ] Bottleneck is Spacy
-- +concordanties met keywords+
-- +topics + clusteren+
+  + [ ] Bottleneck is Sentence Boundary Detection / Spacy in general
 - [X] Inspiratie: zoek tools met voorbeelden van tekst-statistieken
 - [ ] belangrijke termen met tf-idf
 - [ ] frog tagger → beter dan spacy voor Nederlands
-- [ ] word count/avg wordcount
-- [ ] sentence length/avg sentence length
+- [X] word count/avg wordcount
+- [X] sentence length/avg sentence length
 - [ ] sentiment analysis over time
 - [ ] Topic modelling
-- [ ] Statistics
-- [ ] average word length
-- [X] average sentence length
 - [ ] measures of complexity,
 - [ ] words with relatively high term frequency (tf-idf)
-- [ ] collocations
 - [ ] n-grams
+- [ ] transformeer de xml naar json/dict met relevante informatie
 ** DONE Preprocessing
 *** DONE Language recognition
 - langdetect
@@ -69,4 +64,3 @@ etc.),
 ** NB script alters the tree
 - werkt het nog met etree.tostring()?
 * TeiDoc mag nog iets generieker
-* Stats moeten sneller!

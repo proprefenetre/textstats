@@ -47,8 +47,14 @@ class TeiDoc:
 
     def metadata(self):
         tree = etree.fromstring(self.xml)
-        let_id = tree.xpath('//tei:teiHeader//tei:sourceDesc/vg:letDesc/vg:letIdentifier//tei:idno[@type="jlb"]', namespaces=self.nsmap,)[0].text
-        lh = tree.xpath("//tei:teiHeader//tei:sourceDesc/vg:letDesc/vg:letHeading", namespaces=self.nsmap,)[0]
+        let_id = tree.xpath(
+            '//tei:teiHeader//tei:sourceDesc/vg:letDesc/vg:letIdentifier//tei:idno[@type="jlb"]',
+            namespaces=self.nsmap,
+        )[0].text
+        lh = tree.xpath(
+            "//tei:teiHeader//tei:sourceDesc/vg:letDesc/vg:letHeading",
+            namespaces=self.nsmap,
+        )[0]
         entities = []
         try:
             for e in tree.xpath("//tei:rs", namespaces=self.nsmap):

@@ -1,8 +1,9 @@
-import json
 from functools import wraps
 import time
 
 import spacy
+from spacy.lang.nl import Dutch
+from spacy.lang.fr import French
 
 
 def timethis(func):
@@ -55,16 +56,19 @@ class VGCorpus:
     def __init__(self, letters):
         self.letters = letters
 
+    @timethis
     def frequencies(self):
         texts = {
-            text.metadata["name"] : {
+            text.metadata["name"]: {
                 "metadata": text.metadata,
                 "language": text.language,
                 "word_count": text.word_count(),
                 "sentence_count": text.sentence_count(),
                 "avg_sentence_length": text.avg_sentence_length(),
                 "keywords": text.keywords(),
-            } for text in self.letters}
+            }
+            for text in self.letters
+        }
 
         corpus = {
             "num_texts": len(self.letters),
@@ -72,8 +76,42 @@ class VGCorpus:
             "sentence_count": sum(t.sentence_count() for t in self.letters),
         }
 
-        corpus["avg_sentence_length"] = sum(sum(letter.sentence_lengths()) for letter in self.letters) / corpus["sentence_count"]
+        corpus["avg_sentence_length"] = (
+            sum(sum(letter.sentence_lengths()) for letter in self.letters)
+            / corpus["sentence_count"]
+        )
         corpus["avg_words_per_letter"] = corpus["word_count"] / corpus["num_texts"]
-        corpus["avg_sentences_per_letter"] = corpus["sentence_count"] / corpus["num_texts"]
+        corpus["avg_sentences_per_letter"] = (
+            corpus["sentence_count"] / corpus["num_texts"]
+        )
 
         return {"corpus": corpus, "texts": texts}
+
+    @timethis
+    def frequencies_loop(self):
+        texts = {}
+        corpus = {"num_texts": len(self.letters), "word_count": 0, "sentence_count": 0}
+
+        for text in self.letters:
+
+            text.metadata["name"]: {
+                "metadata": text.metadata,
+                "language": text.language,
+                "word_count": text.word_count(),
+                "sentence_count": text.sentence_count(),
+                "avg_sentence_length": text.avg_sentence_length(),
+                "keywords": text.keywords(),
+            }
+            corpus["word_count"] += text.word_count()
+            corpus["sentence_count"] += text.sentence_count()
+
+        corpus["avg_sentence_length"] = (
+            sum(sum(letter.sentence_lengths()) for letter in self.letters)
+            / corpus["sentence_count"]
+        )
+        corpus["avg_words_per_letter"] = corpus["word_count"] / corpus["num_texts"]
+        corpus["avg_sentences_per_letter"] = (
+            corpus["sentence_count"] / corpus["num_texts"]
+        )
+
+       return {"corpus": corpus, "texts": texts}
