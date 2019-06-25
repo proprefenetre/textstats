@@ -1,21 +1,6 @@
-from functools import wraps
-import time
-
 import spacy
-from spacy.lang.nl import Dutch
-from spacy.lang.fr import French
 
-
-def timethis(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        start = time.perf_counter()
-        r = func(*args, **kwargs)
-        end = time.perf_counter()
-        print(f"{func.__module__}.{func.__name__} : {end-start}")
-        return r
-
-    return wrapper
+from utils import timethis
 
 
 NLP_NL = spacy.load("nl_core_news_sm")  # sm → geen word vectors
@@ -23,7 +8,7 @@ NLP_FR = spacy.load("fr_core_news_md")
 
 
 class VGLetter:
-    def __init__(self, metadata, language, text, sentence_detection="nlp"):
+    def __init__(self, metadata, language, text):
         self.metadata = metadata
         self.language = language
         if language == "fr":
@@ -32,9 +17,6 @@ class VGLetter:
             self.doc = NLP_NL(text)
         self.sentences = [s.text for s in self.doc.sents]
         self.text = " ".join(self.sentences).strip()
-
-    def _detect_sentences(self):
-        pass
 
     def word_count(self):
         return len(self.text.split())
@@ -54,9 +36,8 @@ class VGLetter:
 
 class VGCorpus:
     def __init__(self, letters):
-        self.letters = letters
+        self.letters = [VGLetter(*l) for l in letters]
 
-    @timethis
     def frequencies(self):
         texts = {
             text.metadata["name"]: {
@@ -70,6 +51,7 @@ class VGCorpus:
             for text in self.letters
         }
 
+        # TODO: turn alla dese into methods: self.num_texts, self.word_count &c
         corpus = {
             "num_texts": len(self.letters),
             "word_count": sum(t.word_count() for t in self.letters),
@@ -77,8 +59,7 @@ class VGCorpus:
         }
 
         corpus["avg_sentence_length"] = (
-            sum(sum(letter.sentence_lengths()) for letter in self.letters)
-            / corpus["sentence_count"]
+            sum(sum(letter.sentence_lengths()) for letter in self.letters) / corpus["sentence_count"]
         )
         corpus["avg_words_per_letter"] = corpus["word_count"] / corpus["num_texts"]
         corpus["avg_sentences_per_letter"] = (
@@ -106,12 +87,10 @@ class VGCorpus:
             corpus["sentence_count"] += text.sentence_count()
 
         corpus["avg_sentence_length"] = (
-            sum(sum(letter.sentence_lengths()) for letter in self.letters)
-            / corpus["sentence_count"]
-        )
+            sum(sum(letter.sentence_lengths()) for letter in self.letters) / corpus["sentence_count"])
         corpus["avg_words_per_letter"] = corpus["word_count"] / corpus["num_texts"]
         corpus["avg_sentences_per_letter"] = (
-            corpus["sentence_count"] / corpus["num_texts"]
-        )
+            corpus["sentence_count"] / corpus["num_texts"])
 
-       return {"corpus": corpus, "texts": texts}
+        return {"corpus": corpus,
+                "texts": texts}

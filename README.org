@@ -1,4 +1,10 @@
 #+OPTIONS: ^:nil
+* Inbox
+** maak generiek @teidoc
+** maak subsets per taal @corpus
+- met bijbehorende word-counts &c
+** vergelijk Nederlab (www.nederlab.nl)
+- zoekfunctie (levenshtein d, expansie)
 * Docere
 - Generieke document viewer
 - O.a. Gekaapte Brieven
@@ -49,8 +55,6 @@
     bivectorizer = CountVectorizer(min_df=5, max_df=0.9, stop_words='english', lowercase=True, ngram_range=(1,2))
     bigram_vectorized = bivectorizer.fit_transform(wines["processed_description"])
 #+END_SRC
-* DONE emit JSON or inject XML? @Hennie
-SCHEDULED: <2019-06-18 Tue>
 * XML
 ** Tei contains:
 - *letters* (let***.xml) and *related documents* (RM***.xml),
@@ -63,4 +67,3 @@ etc.),
   (facsimile elements).
 ** NB script alters the tree
 - werkt het nog met etree.tostring()?
-* TeiDoc mag nog iets generieker
