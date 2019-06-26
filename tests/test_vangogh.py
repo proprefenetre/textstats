@@ -24,6 +24,7 @@ def entities():
     from vangogh.teidoc import TeiDocument
     return TeiDocument("/Users/niels/projects/vangogh/data/tei-example-facsimiles.xml").entities()
 
+
 def test_teidoc(teidocument):
     from vangogh.teidoc import TeiDocument
     assert isinstance(teidocument, TeiDocument)
@@ -42,11 +43,9 @@ def test_metadata(metadata):
 
 def test_entities(entities):
     assert isinstance(entities, list)
+    assert all(lambda x: x[0] in ["pers", "lit"] for x in entities)
+    assert all(lambda x: str.isdigit(x[1]))
     pprint(entities)
-
-
-
-
 
 
 # class TestFreqInfo:
