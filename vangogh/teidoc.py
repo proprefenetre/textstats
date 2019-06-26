@@ -1,8 +1,9 @@
-import langdetect
+from collections import defaultdict
 from lxml import etree
 import re
 import unicodedata
 
+import langdetect
 
 PUNCT_MAP = {
     "\u00a0": " ",  # NO-BREAK SPACE
@@ -53,27 +54,25 @@ class TeiDocument:
                 nsmap["tei"] = nsmap.pop(None)
         return nsmap
 
+    def _element_map(self, element):
+        return etree.QName(element.tag).localname, dict(map(self._element_map, element)) or element.text
+
     def metadata(self):
         """ teiHeader """
+        tree = etree.fromstring(self.tree)
+        return self._element_map(tree.xpath("//tei:teiHeader", namespaces=self.nsmap)[0])
 
-        tree = etree.fromstring(self.xml)
-        let_id = tree.xpath(
-            '//tei:teiHeader//tei:sourceDesc/vg:letDesc/vg:letIdentifier//tei:idno[@type="jlb"]',
-            namespaces=self.nsmap,
-        )[0].text
-        lh = tree.xpath(
-            "//tei:teiHeader//tei:sourceDesc/vg:letDesc/vg:letHeading",
-            namespaces=self.nsmap,
-        )[0]
-        metadata = {
-            "name": "let" + let_id if "RM" not in let_id else let_id,
-            "author": lh[0].text,
-            "addressee": lh[1].text,
-            "place": lh[2].text,
-            "date": lh[3].text,
-        }
-
-        return metadata
+        # lh = tree.xpath(
+        #     "//tei:teiHeader//tei:sourceDesc/vg:letDesc/vg:letHeading",
+        #     namespaces=self.nsmap,
+        # )[0]
+        # metadata = {
+        #     "name": "let" + let_id if "RM" not in let_id else let_id,
+        #     "author": lh[0].text,
+        #     "addressee": lh[1].text,
+        #     "place": lh[2].text,
+        #     "date": lh[3].text,
+        # }
 
     def entities(self):
         """ alle rs-elementene: <rs type=aaa key=000></rs> """

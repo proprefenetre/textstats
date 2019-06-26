@@ -12,6 +12,12 @@ def teidocument():
     return TeiDocument("/Users/niels/projects/vangogh/data/tei-example-facsimiles.xml")
 
 
+@pytest.fixture
+def metadata():
+    from vangogh.teidoc import TeiDocument
+    return TeiDocument("/Users/niels/projects/vangogh/data/tei-example-facsimiles.xml").metadata()
+
+
 def test_teidoc(teidocument):
     from vangogh.teidoc import TeiDocument
     assert isinstance(teidocument, TeiDocument)
@@ -22,6 +28,12 @@ def test_get_nsmap(teidocument):
     assert "tei" in teidocument.nsmap
     assert "vg" in teidocument.nsmap
 
+
+def test_metadata(metadata):
+    assert isinstance(metadata, tuple)
+    # assert "fileDesc" in metadata
+    # assert "sourceDesc" in metadata["fileDesc"]
+    print(len(metadata))
 
 
 
