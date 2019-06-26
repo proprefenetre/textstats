@@ -10,7 +10,7 @@ def get_texts(path, nlp, n=False, languages=["nl"]):
     if n:
         corpus = islice(corpus, n)
     for d in corpus:
-        td = TeiDoc(d.as_posix())
+        td = TeiDocument(d.as_posix())
         if td.lang() not in languages:
             continue
         yield (td.metadata(), nlp(td.processed_text()))

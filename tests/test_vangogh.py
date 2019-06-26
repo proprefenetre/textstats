@@ -6,22 +6,22 @@ import pickle
 import pytest
 
 
-from vangogh.teidoc import TeiDoc
+from vangogh.teidoc import TeiDocument
 from vangogh.corpus import VGCorpus
 
 
-class TestTeiDoc:
+class TestTeiDocument:
 
     def test_teidoc(self):
-        letter = TeiDoc("/Users/niels/projects/vangogh/letters/let001.xml")
-        rm = TeiDoc("/Users/niels/projects/vangogh/letters/RM01.xml")
+        letter = TeiDocument("/Users/niels/projects/vangogh/letters/let001.xml")
+        rm = TeiDocument("/Users/niels/projects/vangogh/letters/RM01.xml")
         for d in [letter, rm]:
-            assert isinstance(d, TeiDoc)
+            assert isinstance(d, TeiDocument)
 
     def test_text_extraction(self):
-        letter = TeiDoc("/Users/niels/projects/vangogh/letters/let001.xml")
+        letter = TeiDocument("/Users/niels/projects/vangogh/letters/let001.xml")
         assert len(letter.text()) == 4
-        rm = TeiDoc("/Users/niels/projects/vangogh/letters/RM01.xml")
+        rm = TeiDocument("/Users/niels/projects/vangogh/letters/RM01.xml")
         assert len(rm.text()) == 3
         for d in [letter, rm]:
             assert d.text() is not None
@@ -32,8 +32,8 @@ class TestTeiDoc:
         assert letter.text() != letter.processed_text()
 
     def test_header_extraction(self):
-        letter = TeiDoc("/Users/niels/projects/vangogh/letters/let001.xml")
-        rm = TeiDoc("/Users/niels/projects/vangogh/letters/RM01.xml")
+        letter = TeiDocument("/Users/niels/projects/vangogh/letters/let001.xml")
+        rm = TeiDocument("/Users/niels/projects/vangogh/letters/RM01.xml")
         for d in [letter, rm]:
             header = d.metadata()
             assert isinstance(header, dict)
@@ -44,8 +44,8 @@ class TestTeiDoc:
             assert isinstance(header.get("date", None), str)
 
     def test_name_extraction(self):
-        letter = TeiDoc("/Users/niels/projects/vangogh/letters/let001.xml")
-        rm = TeiDoc("/Users/niels/projects/vangogh/letters/RM01.xml")
+        letter = TeiDocument("/Users/niels/projects/vangogh/letters/let001.xml")
+        rm = TeiDocument("/Users/niels/projects/vangogh/letters/RM01.xml")
         for d in [letter, rm]:
             names = d.metadata()["entities"]
             assert isinstance(names, list)
@@ -53,8 +53,8 @@ class TestTeiDoc:
                 assert len(n) == 3
 
     def test_language_detection(self):
-        lett_nl = TeiDoc("/Users/niels/projects/vangogh/letters/let001.xml")
-        lett_fr = TeiDoc("/Users/niels/projects/vangogh/letters/let571.xml")
+        lett_nl = TeiDocument("/Users/niels/projects/vangogh/letters/let001.xml")
+        lett_fr = TeiDocument("/Users/niels/projects/vangogh/letters/let571.xml")
         assert lett_nl.lang() == 'nl'
         assert lett_fr.lang() == 'fr'
 

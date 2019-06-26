@@ -5,7 +5,7 @@ from pprint import pprint
 
 from utils import timethis
 from corpus import VGCorpus
-from teidoc import TeiDoc
+from teidoc import TeiDocument
 
 
 CORPUS_DIR = "/Users/niels/projects/vangogh/letters/"
@@ -19,7 +19,7 @@ def get_letters(corpus_path, n=False):
     if n:
         corpus = islice(corpus, n)
     for p in corpus:
-        td = TeiDoc(p.as_posix())
+        td = TeiDocument(p.as_posix())
         yield (td.metadata(), td.lang(), td.processed_text())
 
 

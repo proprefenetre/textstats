@@ -39,7 +39,7 @@ NSMAP = {
 }
 
 
-class TeiDoc:
+class TeiDocument:
     def __init__(self, xml, parser=etree.XMLParser(), punct=PUNCT_MAP, nsmap=NSMAP):
         self.punct = punct
         self.nsmap = nsmap
