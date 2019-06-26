@@ -29,6 +29,9 @@
   <text>
     <body>
       <div>
+        <rs type="pers" key="123">Person</rs>
+        <rs type="lit" key="53"><hi>Book</hi></rs>
+        <rs type="pers" key="122 123">Person One and Person Two</rs>
       </div>
       <div>
       </div>

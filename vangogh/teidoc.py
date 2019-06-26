@@ -1,4 +1,5 @@
 from collections import defaultdict
+import copy
 from lxml import etree, objectify
 import re
 import unicodedata
@@ -62,10 +63,10 @@ class TeiDocument:
         return flatten_dict(xmltodict.parse(etree.tostring(teiHeader), xml_attribs=False))
 
     def entities(self):
-        """ alle rs-elementene: <rs type=aaa key=000></rs> """
+        """ alle rs-elementene: <rs type=aaa key=000></rs>, ignores markup """
         entities = []
-        for e in self.tree.xpath("//tei:rs", namespaces=self.nsmap):
-            entities.append(xmltodict.parse(etree.tostring(e), xml_attribs=False))
+        for e in self.xml.xpath("//tei:rs", namespaces=self.nsmap):
+            entities.append((e.get("type", None), e.get("key", "").split()))
         return entities
 
     def text(self):
