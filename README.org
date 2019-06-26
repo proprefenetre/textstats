@@ -5,6 +5,14 @@
 - met bijbehorende word-counts &c
 ** vergelijk Nederlab (www.nederlab.nl)
 - zoekfunctie (levenshtein d, expansie)
+** TEI: namespace map
+#+BEGIN_SRC python
+self.nsmap = tree.nsmap()  # pseudo
+for k, v in self.nsmap.items():
+    if k is None:
+        self.nsmap['tei'] = v
+        self.nsmap.remove_key(None)  # pseudo
+#+END_SRC
 * Docere
 - Generieke document viewer
 - O.a. Gekaapte Brieven

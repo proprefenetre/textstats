@@ -1,0 +1,21 @@
+<TEI version="2.9.1" xmlns="http://www.tei-c.org/ns/1.0">
+ <teiHeader>
+  <fileDesc>
+   <titleStmt>
+    <title>A TEI Document containing four page images </title>
+   </titleStmt>
+   <publicationStmt>
+    <p>Unpublished demonstration file.</p>
+   </publicationStmt>
+   <sourceDesc>
+    <p>No source: this is an original work.</p>
+   </sourceDesc>
+  </fileDesc>
+ </teiHeader>
+ <facsimile>
+  <graphic url="page1.png"/>
+  <graphic url="page2.png"/>
+  <graphic url="page3.png"/>
+  <graphic url="page4.png"/>
+ </facsimile>
+</TEI>
