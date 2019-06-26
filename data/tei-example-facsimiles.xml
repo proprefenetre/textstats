@@ -1,21 +1,37 @@
-<TEI version="2.9.1" xmlns="http://www.tei-c.org/ns/1.0">
- <teiHeader>
-  <fileDesc>
-   <titleStmt>
-    <title>A TEI Document containing four page images </title>
-   </titleStmt>
-   <publicationStmt>
-    <p>Unpublished demonstration file.</p>
-   </publicationStmt>
-   <sourceDesc>
-    <p>No source: this is an original work.</p>
-   </sourceDesc>
-  </fileDesc>
- </teiHeader>
- <facsimile>
-  <graphic url="page1.png"/>
-  <graphic url="page2.png"/>
-  <graphic url="page3.png"/>
-  <graphic url="page4.png"/>
- </facsimile>
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Last Changed Date: 2018-07-18 12:32:41 +0200 (Wed, 18 Jul 2018) | SVN Revision: 2206 -->
+<!--Licensed under Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)-->
+<?xml-model href="https://xmlschema.huygens.knaw.nl/vgodd.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<TEI xmlns:vg="http://www.vangoghletters.org/ns/" xmlns="http://www.tei-c.org/ns/1.0">
+  <teiHeader xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <fileDesc>
+      <titleStmt>
+        <title>A TEI Document</title>
+        <editor>J</editor>
+        <editor>L</editor>
+        <editor>B</editor>
+      </titleStmt>
+      <sourceDesc>
+        <vg:letDesc>
+          <vg:letIdentifier>
+            <idno type="jlb">001</idno>
+          </vg:letIdentifier>
+          <vg:letHeading>
+            <author>VVG</author>
+            <vg:addressee>TVG</vg:addressee>
+            <vg:placeLet>Den Haag</vg:placeLet>
+            <vg:dateLet>Sunday, 29 September 1872</vg:dateLet>
+          </vg:letHeading>
+        </vg:letDesc>
+      </sourceDesc>
+    </fileDesc>
+  </teiHeader>
+  <text>
+    <body>
+      <div>
+      </div>
+      <div>
+      </div>
+    </body>
+  </text>
 </TEI>

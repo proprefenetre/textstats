@@ -42,10 +42,20 @@ NSMAP = {
 class TeiDocument:
     def __init__(self, xml, parser=etree.XMLParser(), punct=PUNCT_MAP, nsmap=NSMAP):
         self.punct = punct
-        self.nsmap = nsmap
-        self.xml = etree.tostring(etree.parse(xml, parser))
+        self.xml = etree.parse(xml, parser)
+        self.tree = etree.tostring(self.xml)
+        self.nsmap = self._get_nsmap()
+
+    def _get_nsmap(self):
+        nsmap = self.xml.getroot().nsmap
+        for k, v in nsmap.items():
+            if k is None:
+                nsmap["tei"] = nsmap.pop(None)
+        return nsmap
 
     def metadata(self):
+        """ teiHeader """
+
         tree = etree.fromstring(self.xml)
         let_id = tree.xpath(
             '//tei:teiHeader//tei:sourceDesc/vg:letDesc/vg:letIdentifier//tei:idno[@type="jlb"]',
@@ -55,30 +65,33 @@ class TeiDocument:
             "//tei:teiHeader//tei:sourceDesc/vg:letDesc/vg:letHeading",
             namespaces=self.nsmap,
         )[0]
-        entities = []
-        try:
-            for e in tree.xpath("//tei:rs", namespaces=self.nsmap):
-                try:
-                    content = e.xpath(".//text()")[0]
-                except:
-                    print(f"leeg element -- {let_id}: {etree.tostring(e)}")
-                entities.append(
-                    (e.get("type"), e.get("key").split(), re.sub(r"\s+", r" ", content))
-                )
-        except TypeError:
-            print(f"{let_id}: {etree.tostring(e)}")
-            raise
-
         metadata = {
             "name": "let" + let_id if "RM" not in let_id else let_id,
             "author": lh[0].text,
             "addressee": lh[1].text,
             "place": lh[2].text,
             "date": lh[3].text,
-            "entities": entities,
         }
 
         return metadata
+
+    def entities(self):
+        """ alle rs-elementene: <rs type=aaa key=000></rs> """
+
+        pass
+        # entities = []
+        # for e in tree.xpath("//tei:rs", namespaces=self.nsmap):
+        #     try:
+        #         content = e.xpath(".//text()")[0]
+        #     except:
+        #         print(f"leeg element -- {let_id}: {etree.tostring(e)}")
+        #         entities.append(
+        #             (e.get("type"), e.get("key").split(), re.sub(r"\s+", r" ", content))
+        #             )
+        #     except TypeError:
+        #         print(f"{let_id}: {etree.tostring(e)}")
+        #         raise
+        # return entities
 
     def text(self):
         tree = etree.fromstring(self.xml)
@@ -92,26 +105,17 @@ class TeiDocument:
             text.append("".join(layer))
         return text
 
-    def _rm_punct(self, text):
-        for k, v in self.punct.items():
-            text = re.sub(k, v, text)
-        return text
+    def unicode_characters(self):
+        pass
 
-    def _rm_diacritics(self, text):
-        " Remove accented or otherwise decorated characters "
-        return "".join(
-            c
-            for c in unicodedata.normalize("NFKD", text)
-            if not unicodedata.combining(c)
-        )
+    def processing_pipe(self, funcs):
+        self.pipeline.append(*funcs)
 
-    def processed_text(self, punct=True, diac=True):
-        text = self.text()[0]
-        if punct:
-            text = self._rm_punct(text)
-        if diac:
-            text = self._rm_diacritics(text)
-        return text.strip()
+    def processed_text(self):
+        proc_text = self.text()
+        for fun in self.pipeline:
+            proc_text = fun(proc_text)
+        return proc_text
 
     def lang(self):
-        return langdetect.detect(self.text()[0])
+        return langdetect.detect(self.text())
