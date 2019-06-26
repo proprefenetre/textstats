@@ -3,6 +3,7 @@ import json
 import os
 import os.path
 import pickle
+from pprint import pprint
 import pytest
 
 
@@ -18,6 +19,11 @@ def metadata():
     return TeiDocument("/Users/niels/projects/vangogh/data/tei-example-facsimiles.xml").metadata()
 
 
+@pytest.fixture
+def entities():
+    from vangogh.teidoc import TeiDocument
+    return TeiDocument("/Users/niels/projects/vangogh/data/tei-example-facsimiles.xml").entities()
+
 def test_teidoc(teidocument):
     from vangogh.teidoc import TeiDocument
     assert isinstance(teidocument, TeiDocument)
@@ -30,10 +36,14 @@ def test_get_nsmap(teidocument):
 
 
 def test_metadata(metadata):
-    assert isinstance(metadata, tuple)
-    # assert "fileDesc" in metadata
-    # assert "sourceDesc" in metadata["fileDesc"]
-    print(len(metadata))
+    assert isinstance(metadata, dict)
+    assert all(x in metadata for x in ["author", "editor", "idno", "title", "vg:addressee", "vg:dateLet", "vg:placeLet"])
+
+
+def test_entities(entities):
+    assert isinstance(entities, list)
+    pprint(entities)
+
 
 
 

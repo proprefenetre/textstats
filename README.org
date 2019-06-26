@@ -1,11 +1,23 @@
 #+OPTIONS: ^:nil
 * Inbox
-** maak generiek @teidoc
+** VRE Service:
+*** Wat
+- voorlopig 1 bestand tegelijk
+- webserver
+- bestand komt binnen met een POST
+- JSON d'r uit
+*** Hoe
+- Dockerimage hosten op knaw dockerhub
+- github <-> dockerhub
+*** To do
+- XPaths doorgeven aan Bas waarmee hij kan verifieren of een bestand TEI is
+- productie-webserver?
+** BEZIG maak TeiDoc generiek
 ** maak subsets per taal @corpus
 - met bijbehorende word-counts &c
 ** vergelijk Nederlab (www.nederlab.nl)
 - zoekfunctie (levenshtein d, expansie)
-** TEI: namespace map
+** DONE TEI: namespace map
 #+BEGIN_SRC python
 self.nsmap = tree.nsmap()  # pseudo
 for k, v in self.nsmap.items():

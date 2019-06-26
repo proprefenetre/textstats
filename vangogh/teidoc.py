@@ -1,9 +1,12 @@
 from collections import defaultdict
-from lxml import etree
+from lxml import etree, objectify
 import re
 import unicodedata
 
 import langdetect
+import xmltodict
+
+from .utils import flatten_dict
 
 PUNCT_MAP = {
     "\u00a0": " ",  # NO-BREAK SPACE
@@ -44,7 +47,6 @@ class TeiDocument:
     def __init__(self, xml, parser=etree.XMLParser(), punct=PUNCT_MAP, nsmap=NSMAP):
         self.punct = punct
         self.xml = etree.parse(xml, parser)
-        self.tree = etree.tostring(self.xml)
         self.nsmap = self._get_nsmap()
 
     def _get_nsmap(self):
@@ -54,43 +56,17 @@ class TeiDocument:
                 nsmap["tei"] = nsmap.pop(None)
         return nsmap
 
-    def _element_map(self, element):
-        return etree.QName(element.tag).localname, dict(map(self._element_map, element)) or element.text
-
     def metadata(self):
         """ teiHeader """
-        tree = etree.fromstring(self.tree)
-        return self._element_map(tree.xpath("//tei:teiHeader", namespaces=self.nsmap)[0])
-
-        # lh = tree.xpath(
-        #     "//tei:teiHeader//tei:sourceDesc/vg:letDesc/vg:letHeading",
-        #     namespaces=self.nsmap,
-        # )[0]
-        # metadata = {
-        #     "name": "let" + let_id if "RM" not in let_id else let_id,
-        #     "author": lh[0].text,
-        #     "addressee": lh[1].text,
-        #     "place": lh[2].text,
-        #     "date": lh[3].text,
-        # }
+        teiHeader = self.xml.xpath("//tei:teiHeader//tei:fileDesc", namespaces=self.nsmap)[0]
+        return flatten_dict(xmltodict.parse(etree.tostring(teiHeader), xml_attribs=False))
 
     def entities(self):
         """ alle rs-elementene: <rs type=aaa key=000></rs> """
-
-        pass
-        # entities = []
-        # for e in tree.xpath("//tei:rs", namespaces=self.nsmap):
-        #     try:
-        #         content = e.xpath(".//text()")[0]
-        #     except:
-        #         print(f"leeg element -- {let_id}: {etree.tostring(e)}")
-        #         entities.append(
-        #             (e.get("type"), e.get("key").split(), re.sub(r"\s+", r" ", content))
-        #             )
-        #     except TypeError:
-        #         print(f"{let_id}: {etree.tostring(e)}")
-        #         raise
-        # return entities
+        entities = []
+        for e in self.tree.xpath("//tei:rs", namespaces=self.nsmap):
+            entities.append(xmltodict.parse(etree.tostring(e), xml_attribs=False))
+        return entities
 
     def text(self):
         tree = etree.fromstring(self.xml)
