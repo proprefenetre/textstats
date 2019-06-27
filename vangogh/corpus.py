@@ -59,7 +59,8 @@ class VGCorpus:
         }
 
         corpus["avg_sentence_length"] = (
-            sum(sum(letter.sentence_lengths()) for letter in self.letters) / corpus["sentence_count"]
+            sum(sum(letter.sentence_lengths()) for letter in self.letters)
+            / corpus["sentence_count"]
         )
         corpus["avg_words_per_letter"] = corpus["word_count"] / corpus["num_texts"]
         corpus["avg_sentences_per_letter"] = (
@@ -87,10 +88,12 @@ class VGCorpus:
             corpus["sentence_count"] += text.sentence_count()
 
         corpus["avg_sentence_length"] = (
-            sum(sum(letter.sentence_lengths()) for letter in self.letters) / corpus["sentence_count"])
+            sum(sum(letter.sentence_lengths()) for letter in self.letters)
+            / corpus["sentence_count"]
+        )
         corpus["avg_words_per_letter"] = corpus["word_count"] / corpus["num_texts"]
         corpus["avg_sentences_per_letter"] = (
-            corpus["sentence_count"] / corpus["num_texts"])
+            corpus["sentence_count"] / corpus["num_texts"]
+        )
 
-        return {"corpus": corpus,
-                "texts": texts}
+        return {"corpus": corpus, "texts": texts}

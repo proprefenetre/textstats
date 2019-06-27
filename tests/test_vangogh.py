@@ -10,19 +10,19 @@ import pytest
 @pytest.fixture
 def teidocument():
     from vangogh.teidoc import TeiDocument
-    return TeiDocument("/Users/niels/projects/vangogh/data/tei-example-facsimiles.xml")
+    return TeiDocument("/Users/niels/projects/vangogh/data/tei-example.xml")
 
 
 @pytest.fixture
 def metadata():
     from vangogh.teidoc import TeiDocument
-    return TeiDocument("/Users/niels/projects/vangogh/data/tei-example-facsimiles.xml").metadata()
+    return TeiDocument("/Users/niels/projects/vangogh/data/tei-example.xml").metadata()
 
 
 @pytest.fixture
 def entities():
     from vangogh.teidoc import TeiDocument
-    return TeiDocument("/Users/niels/projects/vangogh/data/tei-example-facsimiles.xml").entities()
+    return TeiDocument("/Users/niels/projects/vangogh/data/tei-example.xml").entities()
 
 
 def test_teidoc(teidocument):
@@ -42,10 +42,18 @@ def test_metadata(metadata):
 
 
 def test_entities(entities):
-    assert isinstance(entities, list)
-    assert all(lambda x: x[0] in ["pers", "lit"] for x in entities)
-    assert all(lambda x: str.isdigit(x[1]))
-    pprint(entities)
+    outp = {"topo": {"1", "2"},
+            "pers": {"442", "443", "524", "526", "642", "643"}}
+    assert entities == outp
+
+
+def test_text(teidocument):
+    original_text = """Den Haag, 29 september 1872. Waarde Theo, Dank voor je brief, het deed mij genoegen dat je weer goed aangekomen zijt. Ik heb je de eerste dagen ge- mist & het was mij vreemd je niet te vinden als ik s’mid- dags t’huis kwam. Wij hebben prettige dagen sa- men gehad, en tusschen de droppeltjes door toch nog al eens gewandeld & het een en ander gezien. Wat vreesselijk weer, je zult het wel benauwd hebben op je wandelingen naar Oisterwijk. Gisteren is het hard- draverij geweest ter gelegenheid van de tentoonstelling, maar de illumi- natie & het vuurwerk zijn uit gesteld, om het slechte weer, het is dus maar goed dat je niet gebleven zijt om die te zien. Groeten van de familie Haanebeek & Roos. Steeds je liefh. Vincent"""
+    assert original_text == teidocument.text()
+
+
+def test_unicode_characters(teidocument):
+    assert teidocument.unicode_characters() == ["’"]
 
 
 # class TestFreqInfo:

@@ -63,29 +63,43 @@ class TeiDocument:
         return flatten_dict(xmltodict.parse(etree.tostring(teiHeader), xml_attribs=False))
 
     def entities(self):
-        """ alle rs-elementene: <rs type=aaa key=000></rs>, ignores markup """
-        entities = []
+        """ Alle rs-elementen: <rs type=aaa key=000></rs>, ignores markup. Entities such as 'parents' are
+        a nnotated as two entities, key='524 526', so they'll be represented as separate persons
+
+        """
+        entities = defaultdict(set)
         for e in self.xml.xpath("//tei:rs", namespaces=self.nsmap):
-            entities.append((e.get("type", None), e.get("key", "").split()))
+            entities[e.get("type")].update(e.get("key", "").split())
         return entities
 
     def text(self):
-        tree = etree.fromstring(self.xml)
+        """ Returns the first div in the <body>. Superfluous whitespace is removed. """
         text = []
-        for d in tree.xpath("//tei:text//tei:body//tei:div", namespaces=self.nsmap):
+        for d in self.xml.xpath("//tei:text//tei:body//tei:div", namespaces=self.nsmap):
             layer = []
             for elt in d:
                 if elt.tag == f"{{{self.nsmap['tei']}}}div":
                     continue
-                layer.append("".join(elt.xpath(".//text()")))
-            text.append("".join(layer))
-        return text
+                layer.append(elt.xpath("string()").strip())
+            text.append(re.sub(r"\s+", " ", " ".join(layer)).strip())
+        return text[0]
 
     def unicode_characters(self):
-        pass
+        """ Returns all unique unicode codepoints in the original text """
+
+        def is_unicode(char):
+            try:
+                char.encode('ascii')
+            except UnicodeEncodeError:
+                return True
+            return False
+
+        return [ch for ch in {c for c in self.text()} if is_unicode(ch)]
 
     def processing_pipe(self, funcs):
         self.pipeline.append(*funcs)
+
+
 
     def processed_text(self):
         proc_text = self.text()
