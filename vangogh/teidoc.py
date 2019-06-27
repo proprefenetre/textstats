@@ -54,16 +54,12 @@ class TeiDocument:
         self.nsmap = self._get_nsmap()
 
     def _get_nsmap(self):
+        """ Return a tree's namespaces, mapped to prefixes. the default namespace is replaced with 'tei' """
         nsmap = self.xml.getroot().nsmap
         for k, v in nsmap.items():
             if k is None:
                 nsmap["tei"] = nsmap.pop(None)
         return nsmap
-
-    def metadata(self):
-        """Return a dict with the teiHeader data."""
-        teiHeader = self.xml.xpath("//tei:teiHeader//tei:fileDesc", namespaces=self.nsmap)[0]
-        return flatten_dict(xmltodict.parse(etree.tostring(teiHeader), xml_attribs=False))
 
     def entities(self):
         """Return the attributes of all <rs>-tags in the document.

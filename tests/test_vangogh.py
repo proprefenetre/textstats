@@ -14,12 +14,6 @@ def teidocument():
 
 
 @pytest.fixture
-def metadata():
-    from vangogh.teidoc import TeiDocument
-    return TeiDocument("/Users/niels/projects/vangogh/data/tei-example.xml").metadata()
-
-
-@pytest.fixture
 def entities():
     from vangogh.teidoc import TeiDocument
     return TeiDocument("/Users/niels/projects/vangogh/data/tei-example.xml").entities()
@@ -34,11 +28,6 @@ def test_get_nsmap(teidocument):
     assert isinstance(teidocument.nsmap, dict)
     assert "tei" in teidocument.nsmap
     assert "vg" in teidocument.nsmap
-
-
-def test_metadata(metadata):
-    assert isinstance(metadata, dict)
-    assert all(x in metadata for x in ["author", "editor", "idno", "title", "vg:addressee", "vg:dateLet", "vg:placeLet"])
 
 
 def test_entities(entities):
