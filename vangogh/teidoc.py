@@ -38,15 +38,18 @@ PUNCT_MAP = {
 }
 
 
-NSMAP = {
-    "tei": "http://www.tei-c.org/ns/1.0",
-    "vg": "http://www.vangoghletters.org/ns/",
-}
-
-
 class TeiDocument:
-    def __init__(self, xml, parser=etree.XMLParser(), punct=PUNCT_MAP, nsmap=NSMAP):
-        self.punct = punct
+    """This class represents a TEI-document
+
+    Parameters
+    ----------
+    xml:
+        either a path to an xml-file or a fileobject that has a read()-method
+    parser:
+        An instance of an etree.XMLParser.
+    """
+
+    def __init__(self, xml, parser=etree.XMLParser()):
         self.xml = etree.parse(xml, parser)
         self.nsmap = self._get_nsmap()
 
@@ -58,13 +61,15 @@ class TeiDocument:
         return nsmap
 
     def metadata(self):
-        """ teiHeader """
+        """Return a dict with the teiHeader data."""
         teiHeader = self.xml.xpath("//tei:teiHeader//tei:fileDesc", namespaces=self.nsmap)[0]
         return flatten_dict(xmltodict.parse(etree.tostring(teiHeader), xml_attribs=False))
 
     def entities(self):
-        """ Alle rs-elementen: <rs type=aaa key=000></rs>, ignores markup. Entities such as 'parents' are
-        a nnotated as two entities, key='524 526', so they'll be represented as separate persons
+        """Return the attributes of all <rs>-tags in the document.
+
+        Entities such as 'parents' are a nnotated as two entities, key='524 526',
+        so they'll be represented as separate persons
 
         """
         entities = defaultdict(set)
@@ -72,8 +77,15 @@ class TeiDocument:
             entities[e.get("type")].update(e.get("key", "").split())
         return entities
 
-    def text(self):
-        """ Returns the first div in the <body>. Superfluous whitespace is removed. """
+    def text(self, layers=False):
+        """
+        Return the first div in the <body> as a single string. Strips whitespace.
+
+        Parameters
+        ----------
+        layers: bool
+            if true, return a list with the text of each <div> in the <body>
+        """
         text = []
         for d in self.xml.xpath("//tei:text//tei:body//tei:div", namespaces=self.nsmap):
             layer = []
@@ -82,11 +94,11 @@ class TeiDocument:
                     continue
                 layer.append(elt.xpath("string()").strip())
             text.append(re.sub(r"\s+", " ", " ".join(layer)).strip())
-        return text[0]
+
+        return text if layers else text[0]
 
     def unicode_characters(self):
-        """ Returns all unique unicode codepoints in the original text """
-
+        """Return all unique unicode codepoints in the original text."""
         def is_unicode(char):
             try:
                 char.encode('ascii')
@@ -94,18 +106,15 @@ class TeiDocument:
                 return True
             return False
 
-        return [ch for ch in {c for c in self.text()} if is_unicode(ch)]
+        chars = []
+        for c in {ch for ch in self.text()}:
+            if is_unicode(c):
+                chars.append({'character': c,
+                              'codepoint': f'0x{ord(c):04x}',
+                              'category': unicodedata.category(c),
+                              'name': unicodedata.name(c),
+                })
+        return chars
 
-    def processing_pipe(self, funcs):
-        self.pipeline.append(*funcs)
-
-
-
-    def processed_text(self):
-        proc_text = self.text()
-        for fun in self.pipeline:
-            proc_text = fun(proc_text)
-        return proc_text
-
-    def lang(self):
+    def language(self):
         return langdetect.detect(self.text())

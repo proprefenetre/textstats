@@ -53,8 +53,16 @@ def test_text(teidocument):
 
 
 def test_unicode_characters(teidocument):
-    assert teidocument.unicode_characters() == ["’"]
+    assert teidocument.unicode_characters()[0] == {
+        'character': '’',
+        'codepoint': '0x2019',
+        'category': 'Pf',
+        'name': 'RIGHT SINGLE QUOTATION MARK'
+    }
 
+
+def test_language_detection(teidocument):
+    assert teidocument.language() == 'nl'
 
 # class TestFreqInfo:
 
