@@ -10,7 +10,8 @@ import pytest
 @pytest.fixture
 def teidocument():
     from vangogh.teidoc import TeiDocument
-    return TeiDocument("/Users/niels/projects/vangogh/data/tei-example.xml")
+    with open("/Users/niels/projects/vangogh/data/tei-example.xml", "rb") as f:
+        return TeiDocument(f)
 
 
 @pytest.fixture
@@ -24,34 +25,34 @@ def test_teidoc(teidocument):
     assert isinstance(teidocument, TeiDocument)
 
 
-def test_get_nsmap(teidocument):
-    assert isinstance(teidocument.nsmap, dict)
-    assert "tei" in teidocument.nsmap
-    assert "vg" in teidocument.nsmap
+# def test_get_nsmap(teidocument):
+#     assert isinstance(teidocument.nsmap, dict)
+#     assert "tei" in teidocument.nsmap
+#     assert "vg" in teidocument.nsmap
 
 
-def test_entities(entities):
-    outp = {"topo": {"1", "2"},
-            "pers": {"442", "443", "524", "526", "642", "643"}}
-    assert entities == outp
+# def test_entities(entities):
+#     outp = {"topo": {"1", "2"},
+#             "pers": {"442", "443", "524", "526", "642", "643"}}
+#     assert entities == outp
 
 
-def test_text(teidocument):
-    original_text = """Den Haag, 29 september 1872. Waarde Theo, Dank voor je brief, het deed mij genoegen dat je weer goed aangekomen zijt. Ik heb je de eerste dagen ge- mist & het was mij vreemd je niet te vinden als ik s’mid- dags t’huis kwam. Wij hebben prettige dagen sa- men gehad, en tusschen de droppeltjes door toch nog al eens gewandeld & het een en ander gezien. Wat vreesselijk weer, je zult het wel benauwd hebben op je wandelingen naar Oisterwijk. Gisteren is het hard- draverij geweest ter gelegenheid van de tentoonstelling, maar de illumi- natie & het vuurwerk zijn uit gesteld, om het slechte weer, het is dus maar goed dat je niet gebleven zijt om die te zien. Groeten van de familie Haanebeek & Roos. Steeds je liefh. Vincent"""
-    assert original_text == teidocument.text()
+# def test_text(teidocument):
+#     original_text = """Den Haag, 29 september 1872. Waarde Theo, Dank voor je brief, het deed mij genoegen dat je weer goed aangekomen zijt. Ik heb je de eerste dagen ge- mist & het was mij vreemd je niet te vinden als ik s’mid- dags t’huis kwam. Wij hebben prettige dagen sa- men gehad, en tusschen de droppeltjes door toch nog al eens gewandeld & het een en ander gezien. Wat vreesselijk weer, je zult het wel benauwd hebben op je wandelingen naar Oisterwijk. Gisteren is het hard- draverij geweest ter gelegenheid van de tentoonstelling, maar de illumi- natie & het vuurwerk zijn uit gesteld, om het slechte weer, het is dus maar goed dat je niet gebleven zijt om die te zien. Groeten van de familie Haanebeek & Roos. Steeds je liefh. Vincent"""
+#     assert original_text == teidocument.text()
 
 
-def test_unicode_characters(teidocument):
-    assert teidocument.unicode_characters()[0] == {
-        'character': '’',
-        'codepoint': '0x2019',
-        'category': 'Pf',
-        'name': 'RIGHT SINGLE QUOTATION MARK'
-    }
+# def test_unicode_characters(teidocument):
+#     assert teidocument.unicode_characters()[0] == {
+#         'character': '’',
+#         'codepoint': '0x2019',
+#         'category': 'Pf',
+#         'name': 'RIGHT SINGLE QUOTATION MARK'
+#     }
 
 
-def test_language_detection(teidocument):
-    assert teidocument.language() == 'nl'
+# def test_language_detection(teidocument):
+#     assert teidocument.language() == 'nl'
 
 # class TestFreqInfo:
 

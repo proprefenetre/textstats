@@ -1,6 +1,7 @@
 #+OPTIONS: ^:nil
 * Inbox
 ** VRE Service:
+*** curl -X POST -d @let001.xml -H 'Content-Type: application/xml' http://localhost:5000
 *** Wat
 - voorlopig 1 bestand tegelijk
 - webserver
@@ -12,6 +13,14 @@
 *** To do
 - XPaths doorgeven aan Bas waarmee hij kan verifieren of een bestand TEI is
 - productie-webserver?
+** curl
+- curl -X POST -d @data/letters/let001.xml http://localhost:5000/as_text :: form
+- curl -X POST -d @data/letters/let001.xml -H 'Content-Type: application/xml' http://localhost:5000 :: data
+- curl -X POST -d @data/letters/let001.xml -H 'application/xml' http://localhost:5000 :: form
+- curl -X POST -d @data/letters/let001.xml -H 'text/xml' http://localhost:5000 :: data
+  - xml before an '=' is interpreted as key, stuff after a value
+
+
 ** BEZIG maak TeiDoc generiek
 ** maak subsets per taal @corpus
 - met bijbehorende word-counts &c
@@ -25,6 +34,8 @@ for k, v in self.nsmap.items():
         self.nsmap['tei'] = v
         self.nsmap.remove_key(None)  # pseudo
 #+END_SRC
+** NB frog tagger → beter dan spacy voor Nederlands
+
 * Docere
 - Generieke document viewer
 - O.a. Gekaapte Brieven
@@ -33,30 +44,57 @@ for k, v in self.nsmap.items():
 - noten
 - text layers
 - facsimiles (± 60Gb)
+- unicode entities:
+  - "\u00a0": " ", # NO-BREAK SPACE
+  - "\u00a3": "",  # POUND SIGN
+  - "\u00b0": "",  # DEGREE SIGN
+  - "\u00b1": "",  # PLUS-MINUS SIGN
+  - "\u00b4": "",  # ACUTE ACCENT
+  - "\u00b7": "",  # MIDDLE DOT
+  - "\u00bb": "",  # RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
+  - "\u00bd": "",  # VULGAR FRACTION ONE HALF
+  - "\u2013": "",  # EN DASH
+  - "\u2014": "",  # EM DASH
+  - "\u2018": "",  # LEFT SINGLE QUOTATION MARK
+  - "\u201c": "",  # LEFT DOUBLE QUOTATION MARK
+  - "\u201d": "",  # RIGHT DOUBLE QUOTATION MARK
+  - "\u2026": "",  # HORIZONTAL ELLIPSIS
+  - "\u2500": "",  # BOX DRAWINGS LIGHT HORIZONTAL
+  - "\u25a1": "",  # WHITE SQUARE
+  - "\u2019": "'", # RIGHT SINGLE QUOTATION MARK
+  - "&": "en",
+  - r"\s+": " ",
+  - "-": "",
+  - "_": "",
+  - "t'": "t",
+  - "d'": "de ",
+  - "'t": "het",
+  - "/": ",",
 * TODO
 - [ ] Maak het sneller!
-  + [ ] Bottleneck is Sentence Boundary Detection / Spacy in general
+  + [ ] Bottlenecks
+    + is Sentence Boundary Detection / Spacy in general
+    + language detection
 - [X] Inspiratie: zoek tools met voorbeelden van tekst-statistieken
 - [ ] belangrijke termen met tf-idf
-- [ ] frog tagger → beter dan spacy voor Nederlands
 - [X] word count/avg wordcount
 - [X] sentence length/avg sentence length
 - [ ] sentiment analysis over time
 - [ ] Topic modelling
-- [ ] measures of complexity,
+- [X] measures of complexity,
 - [ ] words with relatively high term frequency (tf-idf)
-- [ ] n-grams
-- [ ] transformeer de xml naar json/dict met relevante informatie
-** DONE Preprocessing
+- [X] n-grams
+- [X] transformeer de xml naar json/dict met relevante informatie
+** BEZIG Preprocessing
+*** NB Textacy
 *** DONE Language recognition
 - langdetect
-*** XML
+*** BEZIG XML
 - [X] lxml
-- [-] text layers
-- [ ] generic
-*** Tokenizing & Tagging
+- [X] text layers
+- [-] generic
+*** DONE Tokenizing & Tagging
 - Spacy
-- Serializing
 ** Scikit-learn
 *** decomposition
 - NMF
@@ -87,3 +125,4 @@ etc.),
   (facsimile elements).
 ** NB script alters the tree
 - werkt het nog met etree.tostring()?
+-
