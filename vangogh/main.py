@@ -1,10 +1,5 @@
-from io import BytesIO
-import json
-from pathlib import Path
-
-from lxml import etree
 from flask import Flask, request, jsonify
-from werkzeug import ImmutableMultiDict
+import spacy
 import textacy as txt
 import textacy.preprocess as prep
 import textacy.keyterms as keyterms
@@ -31,49 +26,39 @@ def before_request():
 
 @app.route("/", methods=["POST"])
 def textstats():
+    doc = None
     if request.data and isinstance(request.data, bytes):
-        doc = TeiDocument(request.data)
+        doc = request.data
     elif request.form:
-        fn = request.form.get("file", None)
-        if fn:
-            doc = TeiDocument(fn)
+        if request.form.get("file", None):
+            doc = request.form.get("file")
         else:
-            return "Incorrect request\nGot form but no key\n"
+            return "Invalid request\n"
 
+    td = TeiDocument(doc)
     stats = dict()
-    stats["entities"] = doc.entities()
+    stats["entities"] = td.entities()
     for k, v in stats["entities"].items():
         stats[f"num_{k}"] = len(v)
 
-    stats["unicode_entities"] = doc._unicode_characters()
+    stats["unicode_entities"] = td._unicode_characters()
 
     # remove / replace unicode entities by hand :(
-    stats["text"] = doc.text(preprocess=True)
+    text = td.text()
 
-    # text = prep.normalize_unicode(text)
-    # text = prep.normalize_whitespace(text)
-    # text = prep.preprocess_text(text, no_currency_symbols=True)
+    text = prep.normalize_unicode(text)
+    text = prep.normalize_whitespace(text)
+    text = prep.preprocess_text(text, no_currency_symbols=True)
 
-    # doc = txt.make_spacy_doc(text)
+    nlp = spacy.load("nl_core_news_sm")
+    doc = nlp(text)
 
-    # stats["key terms"] = keyterms.textrank(doc, normalize="lemma", n_keyterms=5)
-    # ts = txt.TextStats(doc)
-    # stats["counts"] = ts.basic_counts
-    # stats["readability"] = ts.readability_stats
+    stats["key terms"] = sorted(keyterms.textrank(doc, normalize="lemma", n_keyterms=10),
+                                key=lambda x: x[1], reverse=True)
+    ts = txt.TextStats(doc)
+    stats["counts"] = ts.basic_counts
+    stats["readability"] = ts.readability_stats
 
-    # stats["text"] = textV
+    stats["text"] = text
 
-    # return json.dumps(stats)
     return jsonify(stats)
-
-
-@app.route("/files", methods=["GET", "POST"])
-def upload_file():
-    if request.method == "POST":
-        # check if the post request has the file part
-        if "file" not in request.files:
-            return "no file"
-        file = request.files["file"]
-        # if user does not select file, browser also
-        # submit an empty part without filename
-    return f"got yer file: {file.filename}"

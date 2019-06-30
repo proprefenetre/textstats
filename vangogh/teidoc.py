@@ -29,7 +29,7 @@ class TeiDocument:
             if os.path.exists(xml):
                 self.xml = etree.parse(xml, parser)
             else:
-                raise FileNotFoundError
+                raise ValueError(f"Can't parse data: {xml}")
 
         self.nsmap = self._get_nsmap()
 
@@ -61,7 +61,7 @@ class TeiDocument:
             )
         return entities
 
-    def text(self, layers=False, preprocess=False):
+    def text(self, layers=False):
         """
         Return the first div in the <body> as a single string. Strips whitespace.
 
@@ -77,10 +77,7 @@ class TeiDocument:
                 if elt.tag == f"{{{self.nsmap['tei']}}}div":
                     continue
                 layer.append(elt.xpath("string()").strip())
-            if preprocess:
-                text.append(self.normalize_unicode(" ".join(layer)))
-            else:
-                text.append(" ".join(layer))
+            text.append(" ".join(layer))
 
         return text if layers else text[0]
 
@@ -107,34 +104,34 @@ class TeiDocument:
                 )
         return chars
 
-    def normalize_unicode(self, text):
+    # def normalize_unicode(self, text):
 
-        common_symbols = {
-            r"\s+": " ",
-            "\u00a0": " ",  # NO-BREAK SPACE
-            # "\u00a3": "",  # POUND SIGN
-            # "\u00b0": "",  # DEGREE SIGN
-            # "\u00b1": "+-",  # PLUS-MINUS SIGN
-            # "\u00b4": "",  # ACUTE ACCENT
-            "\u00b7": ".",  # MIDDLE DOT
-            # "\u00bd": "1/2",  # VULGAR FRACTION ONE HALF
-            "\u2013": "-",  # EN DASH
-            "\u2014": "-",  # EM DASH
-            "\u201c": '"',  # LEFT DOUBLE QUOTATION MARK
-            "\u201d": '"',  # RIGHT DOUBLE QUOTATION MARK
-            "\u2018": "'",  # LEFT SINGLE QUOTATION MARK
-            "\u2019": "'",  # RIGHT SINGLE QUOTATION MARK
-            "\u00bb": '"',  # RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
-            "\u00bb": '"',  # LEFT-POINTING DOUBLE ANGLE QUOTATION MARK
-            "\u2026": "",  # HORIZONTAL ELLIPSIS
-            "\u2500": "",  # BOX DRAWINGS LIGHT HORIZONTAL
-            "\u25a1": "",  # WHITE SQUARE
-            "- ": "",
-        }
-        for k, v in common_symbols.items():
-            text = re.sub(k, v, text)
+    #     common_symbols = {
+    #         r"\s+": " ",
+    #         "\u00a0": " ",  # NO-BREAK SPACE
+    #         # "\u00a3": "",  # POUND SIGN
+    #         # "\u00b0": "",  # DEGREE SIGN
+    #         # "\u00b1": "+-",  # PLUS-MINUS SIGN
+    #         # "\u00b4": "",  # ACUTE ACCENT
+    #         "\u00b7": ".",  # MIDDLE DOT
+    #         # "\u00bd": "1/2",  # VULGAR FRACTION ONE HALF
+    #         "\u2013": "-",  # EN DASH
+    #         "\u2014": "-",  # EM DASH
+    #         "\u201c": '"',  # LEFT DOUBLE QUOTATION MARK
+    #         "\u201d": '"',  # RIGHT DOUBLE QUOTATION MARK
+    #         "\u2018": "'",  # LEFT SINGLE QUOTATION MARK
+    #         "\u2019": "'",  # RIGHT SINGLE QUOTATION MARK
+    #         "\u00bb": '"',  # RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
+    #         "\u00bb": '"',  # LEFT-POINTING DOUBLE ANGLE QUOTATION MARK
+    #         "\u2026": "",  # HORIZONTAL ELLIPSIS
+    #         "\u2500": "",  # BOX DRAWINGS LIGHT HORIZONTAL
+    #         "\u25a1": "",  # WHITE SQUARE
+    #         "- ": "",
+    #     }
+    #     for k, v in common_symbols.items():
+    #         text = re.sub(k, v, text)
 
-        return text
+    #     return text
 
     def language(self):
         return langdetect.detect(self.text())
