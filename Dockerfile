@@ -17,7 +17,3 @@ RUN python -m spacy download fr_core_news_md
 
 # Creating folders, and files for a project:
 COPY . /vangogh/
-
-# XML
-RUN mkdir letters/
-RUN unzip vangoghxml.zip -d letters/
