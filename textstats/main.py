@@ -8,13 +8,11 @@ import textacy.keyterms as keyterms
 
 from .teidoc import TeiDocument
 
-
 app = Flask(__name__)
 
 
 @app.route("/", methods=["POST"])
 def textstats():
-    doc = None
     if request.data and isinstance(request.data, bytes):
         doc = request.data
     elif request.form:
@@ -22,6 +20,8 @@ def textstats():
             doc = request.form.get("file")
         else:
             return "Invalid request\n"
+    else:
+        return "Specify document\n"
 
     td = TeiDocument(doc)
     stats = dict()
@@ -29,10 +29,11 @@ def textstats():
     for k, v in stats["entities"].items():
         stats[f"num_{k}"] = len(v)
 
-    stats["unicode_entities"] = td._unicode_characters()
+    # stats["unicode_entities"] = td._unicode_characters()
 
-    # remove / replace unicode entities by hand :(
     text = td.text()
+
+    # TODO: remove / replace specific unicode entities by hand :(
 
     text = prep.normalize_unicode(text)
     text = prep.normalize_whitespace(text)
@@ -45,7 +46,6 @@ def textstats():
                                 key=lambda x: x[1], reverse=True)
     ts = txt.TextStats(doc)
     stats["counts"] = ts.basic_counts
-    stats["readability"] = ts.readability_stats
 
     stats["text"] = text
 

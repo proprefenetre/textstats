@@ -8,8 +8,6 @@ import unicodedata
 import langdetect
 import xmltodict
 
-from .utils import flatten_dict
-
 
 class TeiDocument:
     """This class represents a TEI-document

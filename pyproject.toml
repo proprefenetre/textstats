@@ -1,8 +1,8 @@
 [tool.poetry]
-name = "vangogh"
+name = "textstats"
 version = "0.1.0"
-description = ""
-authors = ["proprefenetre <proprefenetre@gmail.com>"]
+description = "Provide simple textstats for TEI-documents"
+authors = ["Niels Eigenraam <niels.eigenraam@di.huc.knaw.nl>"]
 
 [tool.poetry.dependencies]
 python = "^3.7"
