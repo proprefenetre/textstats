@@ -12,18 +12,6 @@ from .teidoc import TeiDocument
 app = Flask(__name__)
 
 
-@app.before_request
-def before_request():
-    if True:
-        print(
-            f"HEADERS:\n {request.headers}\n"
-            f"REQ_path: {request.path}\n"
-            f"ARGS: {request.args}\n"
-            f"DATA: {request.data}\n"
-            f"FORM: {request.form}\n"
-        )
-
-
 @app.route("/", methods=["POST"])
 def textstats():
     doc = None

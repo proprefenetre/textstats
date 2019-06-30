@@ -37,3 +37,15 @@ def flatten_dict(d, parent_key="", sep="_"):
         else:
             items.append((new_key, v))
     return dict(items)
+
+# Flask - print requests
+@app.before_request
+def before_request():
+    if True:
+        print(
+            f"HEADERS:\n {request.headers}\n"
+            f"REQ_path: {request.path}\n"
+            f"ARGS: {request.args}\n"
+            f"DATA: {request.data}\n"
+            f"FORM: {request.form}\n"
+        )

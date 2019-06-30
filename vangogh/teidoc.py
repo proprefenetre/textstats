@@ -29,12 +29,17 @@ class TeiDocument:
             if os.path.exists(xml):
                 self.xml = etree.parse(xml, parser)
             else:
+                # TODO: find appropriate error type
                 raise ValueError(f"Can't parse data: {xml}")
 
         self.nsmap = self._get_nsmap()
 
     def _get_nsmap(self):
-        """Return a tree's namespaces, mapped to prefixes. the default namespace is replaced with 'tei'"""
+        """Return a tree's namespaces, mapped to prefixes.
+
+        the default namespace is replaced with 'tei'
+        """
+
         if isinstance(self.xml, etree._ElementTree):
             nsmap = self.xml.getroot().nsmap
         elif isinstance(self.xml, etree._Element):
@@ -51,6 +56,8 @@ class TeiDocument:
         Entities such as 'parents' are a nnotated as two entities, key='524 526',
         so they'll be represented as separate persons
 
+        TODO: include names
+
         """
         entities = defaultdict(list)
 
@@ -63,7 +70,7 @@ class TeiDocument:
 
     def text(self, layers=False):
         """
-        Return the first div in the <body> as a single string. Strips whitespace.
+        Return the first div in the <body> as a single string, unmodified.
 
         Parameters
         ----------
@@ -82,7 +89,7 @@ class TeiDocument:
         return text if layers else text[0]
 
     def _unicode_characters(self):
-        """Return all unique unicode codepoints in the original text."""
+        """Return all unique unicode codepoints in the original text. """
 
         def is_unicode(char):
             try:
@@ -104,34 +111,12 @@ class TeiDocument:
                 )
         return chars
 
-    # def normalize_unicode(self, text):
-
-    #     common_symbols = {
-    #         r"\s+": " ",
-    #         "\u00a0": " ",  # NO-BREAK SPACE
-    #         # "\u00a3": "",  # POUND SIGN
-    #         # "\u00b0": "",  # DEGREE SIGN
-    #         # "\u00b1": "+-",  # PLUS-MINUS SIGN
-    #         # "\u00b4": "",  # ACUTE ACCENT
-    #         "\u00b7": ".",  # MIDDLE DOT
-    #         # "\u00bd": "1/2",  # VULGAR FRACTION ONE HALF
-    #         "\u2013": "-",  # EN DASH
-    #         "\u2014": "-",  # EM DASH
-    #         "\u201c": '"',  # LEFT DOUBLE QUOTATION MARK
-    #         "\u201d": '"',  # RIGHT DOUBLE QUOTATION MARK
-    #         "\u2018": "'",  # LEFT SINGLE QUOTATION MARK
-    #         "\u2019": "'",  # RIGHT SINGLE QUOTATION MARK
-    #         "\u00bb": '"',  # RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
-    #         "\u00bb": '"',  # LEFT-POINTING DOUBLE ANGLE QUOTATION MARK
-    #         "\u2026": "",  # HORIZONTAL ELLIPSIS
-    #         "\u2500": "",  # BOX DRAWINGS LIGHT HORIZONTAL
-    #         "\u25a1": "",  # WHITE SQUARE
-    #         "- ": "",
-    #     }
-    #     for k, v in common_symbols.items():
-    #         text = re.sub(k, v, text)
-
-    #     return text
-
     def language(self):
+        """ Return the text's language.
+
+        NB: accurate, but very slow
+
+        TODO: see if my own langdetect module is faster/as good
+        """
+
         return langdetect.detect(self.text())
