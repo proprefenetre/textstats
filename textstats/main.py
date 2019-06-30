@@ -4,11 +4,21 @@ import textacy as txt
 import textacy.preprocess as prep
 import textacy.keyterms as keyterms
 
-# import xmltodict
-
 from .teidoc import TeiDocument
 
 app = Flask(__name__)
+
+
+@app.before_request
+def before_request():
+    if True:
+        print(
+            f"HEADERS:\n {request.headers}\n"
+            f"REQ_path: {request.path}\n"
+            f"ARGS: {request.args}\n"
+            f"DATA: {request.data[:100]}\n"
+            f"FORM: {request.form}\n"
+        )
 
 
 @app.route("/", methods=["POST"])

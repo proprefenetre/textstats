@@ -19,9 +19,8 @@ RUN python -m spacy download nl_core_news_sm
 # Creating folders, and files for a project:
 COPY . /textstats/
 
-ENV LC_ALL=C.UTF-8
-ENV LANG=C.UTF-8
-
 ENV FLASK_APP textstats/main.py
+ENV FLASK_ENV=development
+
 EXPOSE 5000
-CMD ["flask", "run"]
+CMD ["flask", "run", "--host", "0.0.0.0"]

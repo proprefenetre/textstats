@@ -1,5 +1,7 @@
+.git
+.dockerignore
 .venv
+tests
 */.pytest_cache
 */__pycache__
-letters
 *.egg-info
