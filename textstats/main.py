@@ -1,3 +1,5 @@
+import re
+
 from flask import Flask, request, jsonify
 import spacy
 import textacy as txt
@@ -9,16 +11,24 @@ from .teidoc import TeiDocument
 app = Flask(__name__)
 
 
-@app.before_request
-def before_request():
-    if True:
-        print(
-            f"HEADERS:\n {request.headers}\n"
-            f"REQ_path: {request.path}\n"
-            f"ARGS: {request.args}\n"
-            f"DATA: {request.data[:100]}\n"
-            f"FORM: {request.form}\n"
-        )
+def vg_preprocess(text):
+    patterns = [
+        ("\u2013", "-"),    # EN DASH
+        ("\u2014", "-"),    # EM DASH
+        (r"-\s+", ""),      # Hyphen on sentence boundary
+        (r"&", "en"),
+        ("/", ","),         # zgn. 'kunstkomma'
+        ("\u00a0", " "),    # NO-BREAK SPACE
+        ("\u2018", "'"),    # LEFT SINGLE QUOTATION MARK
+        ("\u2019", "'"),    # RIGHT SINGLE QUOTATION MARK
+        ("\u201c", '"'),    # LEFT DOUBLE QUOTATION MARK
+        ("\u201d", '"'),    # RIGHT DOUBLE QUOTATION MARK
+        ("\u00bb", '"')     # RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
+    ]
+
+    for pat in patterns:
+        text = re.sub(*pat, text)
+    return text
 
 
 @app.route("/", methods=["POST"])
@@ -35,15 +45,13 @@ def textstats():
 
     td = TeiDocument(doc)
     stats = dict()
+
+    # TODO: add names
     stats["entities"] = td.entities()
     for k, v in stats["entities"].items():
         stats[f"num_{k}"] = len(v)
 
-    # stats["unicode_entities"] = td._unicode_characters()
-
-    text = td.text()
-
-    # TODO: remove / replace specific unicode entities by hand :(
+    text = vg_preprocess(td.text())
 
     text = prep.normalize_unicode(text)
     text = prep.normalize_whitespace(text)
@@ -52,8 +60,9 @@ def textstats():
     nlp = spacy.load("nl_core_news_sm")
     doc = nlp(text)
 
-    stats["key terms"] = sorted(keyterms.textrank(doc, normalize="lemma", n_keyterms=10),
-                                key=lambda x: x[1], reverse=True)
+    stats["sgrank"]= sorted(keyterms.sgrank(doc, ngrams=2, window_width=500), key=lambda x: x[1], reverse=True)
+    stats["textrank"] = sorted(keyterms.textrank(doc), key=lambda x: x[1], reverse=True)
+
     ts = txt.TextStats(doc)
     stats["counts"] = ts.basic_counts
 
