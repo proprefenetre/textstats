@@ -9,19 +9,19 @@ import pytest
 
 @pytest.fixture
 def teidocument():
-    from textstats.teidoc import TeiDocument
+    from src.teidoc import TeiDocument
     with open("/Users/niels/projects/vangogh/data/tei-example.xml", "rb") as f:
         return TeiDocument(f)
 
 
 @pytest.fixture
 def entities():
-    from textstats.teidoc import TeiDocument
+    from src.teidoc import TeiDocument
     return TeiDocument("/Users/niels/projects/vangogh/data/tei-example.xml").entities()
 
 
 def test_teidoc(teidocument):
-    from textstats.teidoc import TeiDocument
+    from src.teidoc import TeiDocument
     assert isinstance(teidocument, TeiDocument)
 
 
