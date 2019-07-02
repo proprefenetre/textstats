@@ -6,21 +6,19 @@ RUN pip3 install poetry
 
 # Copy only requirements to cache them in docker layer
 WORKDIR /textstats
-COPY poetry.lock pyproject.toml /textstats/
+COPY poetry.lock pyproject.toml /textstats
 
 # Project initialization:
 RUN poetry config settings.virtualenvs.create false
 RUN poetry install --no-interaction
 
-# spacy models
+# spacy model
 RUN python -m spacy download nl_core_news_sm
-# RUN python -m spacy download fr_core_news_md
 
 # Creating folders, and files for a project:
-COPY . /textstats/
+COPY . .
 
 ENV FLASK_APP src/main.py
 ENV FLASK_ENV=development
 
-EXPOSE 5000
-CMD [ "gunicorn", "-c", "gunicorn_ini.py", "src:app" ]
+CMD [ "gunicorn", "-c", "gunicorn.py", "src:app" ]

@@ -1,18 +1,6 @@
 version: "3"
 
 services:
-  nginx:
-    restart: always
-    build:
-      context: ./nginx
-      dockerfile: Dockerfile
-      args:
-        Domain:
-        FLASK:
-    ports:
-      - "80:80"
-    links:
-      - textstats:textstats
   textstats:
     restart: always
     build:
@@ -20,6 +8,14 @@ services:
       dockerfile: Dockerfile
     expose:
       - "5000"
-    environment:
-      - FLASK_APP=textstats/src/main.py
-      - FLASK_ENV=development
+
+  nginx:
+    restart: always
+    context: ./nginx
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    links:
+      - textstats:textstats
