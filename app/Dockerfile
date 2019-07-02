@@ -21,4 +21,4 @@ COPY . .
 ENV FLASK_APP=textstats
 ENV FLASK_ENV=development
 
-CMD [ "gunicorn", "-c", "gunicorn.py", "src:app" ]
+CMD [ "gunicorn", "-c", "gunicorn.py", "textstats:app" ]

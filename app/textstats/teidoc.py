@@ -1,10 +1,8 @@
 from collections import defaultdict
+import html
 from lxml import etree
 import os.path
-import re
 import unicodedata
-
-import langdetect
 
 
 class TeiDocument:
@@ -12,39 +10,63 @@ class TeiDocument:
 
     Parameters
     ----------
-    xml:
-        either a path to an xml-file or a fileobject that has a read()-method
     parser:
         An instance of an etree.XMLParser.
     """
 
-    def __init__(self, xml, parser=etree.XMLParser()):
-        try:
-            self.xml = etree.fromstring(xml, parser)
-        except etree.XMLSyntaxError:
-            if os.path.exists(xml):
-                self.xml = etree.parse(xml, parser)
-            else:
-                # TODO: find appropriate error type
-                raise ValueError(f"Can't parse data: {xml}")
-
+    def __init__(self, xml, parser=etree.XMLParser(recover=True)):
+        self.parser = parser
+        self.tree = self.parse(xml)
         self.nsmap = self._get_nsmap()
+
+    def parse(self, xml):
+        if isinstance(xml, (str, bytes)):
+            if os.path.isfile(xml):
+                with open(xml, "r") as f:
+                    xml = f.read()
+
+        if isinstance(xml, bytes):
+            xml = xml.decode()
+
+        xml = html.unescape(xml)
+
+        return etree.fromstring(xml.encode("utf-8"), self.parser)
 
     def _get_nsmap(self):
         """Return a tree's namespaces, mapped to prefixes.
 
         the default namespace is replaced with 'tei'
         """
-
-        if isinstance(self.xml, etree._ElementTree):
-            nsmap = self.xml.getroot().nsmap
-        elif isinstance(self.xml, etree._Element):
-            nsmap = self.xml.nsmap
+        if isinstance(self.tree, etree._ElementTree):
+            nsmap = self.tree.getroot().nsmap
+        elif isinstance(self.tree, etree._Element):
+            nsmap = self.tree.nsmap
 
         for k, v in nsmap.items():
             if k is None:
                 nsmap["tei"] = nsmap.pop(None)
         return nsmap
+
+    def _as_ElementTree(self):
+        return etree.ElementTree(self.tree)
+
+    def docinfo(self, attr=None):
+        di = self._as_ElementTree().docinfo
+        info = {
+            "doctype": di.doctype,
+            "encoding": di.encoding,
+            "externalDTD": di.externalDTD,
+            "internalDTD": di.internalDTD,
+            "public_id": di.public_id,
+            "root_name": di.root_name,
+            "standalone": di.standalone,
+            "system_url": di.system_url,
+            "xml_version": di.xml_version,
+        }
+        if attr:
+            return info.get(attr, None)
+        else:
+            return info
 
     def entities(self):
         """Return the attributes of all <rs>-tags in the document.
@@ -57,7 +79,7 @@ class TeiDocument:
         """
         entities = defaultdict(list)
 
-        for e in self.xml.xpath("//tei:rs", namespaces=self.nsmap):
+        for e in self.tree.xpath("//tei:rs", namespaces=self.nsmap):
             ents = entities[e.get("type")]
             entities[e.get("type")].extend(
                 [k for k in e.get("key", "").split() if k not in ents]
@@ -74,7 +96,9 @@ class TeiDocument:
             if true, return a list with the text of each <div> in the <body>
         """
         text = []
-        for d in self.xml.xpath("//tei:text//tei:body//tei:div", namespaces=self.nsmap):
+        for d in self.tree.xpath(
+            "//tei:text//tei:body//tei:div", namespaces=self.nsmap
+        ):
             layer = []
             for elt in d:
                 if elt.tag == f"{{{self.nsmap['tei']}}}div":
@@ -106,13 +130,3 @@ class TeiDocument:
                     }
                 )
         return chars
-
-    def language(self):
-        """ Return the text's language.
-
-        NB: accurate, but very slow
-
-        TODO: see if my own langdetect module is faster/as good
-        """
-
-        return langdetect.detect(self.text())
