@@ -6,7 +6,6 @@ import re
 import unicodedata
 
 import langdetect
-import xmltodict
 
 
 class TeiDocument:
