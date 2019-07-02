@@ -63,9 +63,12 @@ def bigrams(text):
     next(b, None)
     grams = list(zip(a, b))
     for ng in grams:
-        if any(x.like_num or x.is_stop for x in ng):
-            continue
-        yield " ".join(n.lemma_ for n in ng)
+        # if any(x.like_num or x.is_stop for x in ng):
+        #     continue
+        try:
+            yield " ".join(n.lemma_ for n in ng)
+        except:
+            yield " ".join(ng)
 
 
 def trigrams(text):
@@ -75,9 +78,12 @@ def trigrams(text):
     next(c, None)
     grams = list(zip(a, b, c))
     for ng in grams:
-        if any(x.like_num or x.is_stop for x in ng):
-            continue
-        yield " ".join(n.lemma_ for n in ng)
+        # if any(x.like_num or x.is_stop for x in ng):
+        #     continue
+        try:
+            yield " ".join(n.lemma_ for n in ng)
+        except:
+            yield " ".join(ng)
 
 
 def counts(doc):
@@ -92,11 +98,15 @@ def counts(doc):
     bgrams = list(bigrams([w for w in words]))
     tgrams = list(trigrams([w for w in words]))
 
+    pos_grams = list(trigrams([w.pos_ for w in words if not w.like_num])) + list(bigrams([w.pos_ for w in words if not w.like_num]))
+
     return {
         "n_words": len(words),
+        "words_freq": Counter(w.lemma_ for w in words).most_common(10),
         "n_sents": len(list(doc.sents)),
         "hapaxes": sorted(hapaxes, reverse=True),
         "n_hapaxes": len(hapaxes),
         "bigrams": Counter(bgrams).most_common(10),
         "trigrams": Counter(tgrams).most_common(10),
+        "constructions": Counter(pos_grams).most_common(10),
     }
