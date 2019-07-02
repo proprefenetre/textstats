@@ -6,7 +6,7 @@ RUN pip3 install poetry
 
 # Copy only requirements to cache them in docker layer
 WORKDIR /textstats
-COPY poetry.lock pyproject.toml /textstats
+COPY poetry.lock pyproject.toml /textstats/
 
 # Project initialization:
 RUN poetry config settings.virtualenvs.create false
@@ -21,4 +21,4 @@ COPY . .
 ENV FLASK_APP src/main.py
 ENV FLASK_ENV=development
 
-CMD [ "gunicorn", "-c", "gunicorn.py", "src:app" ]
+CMD [ "gunicorn", "-c", "gunicorn.py", "src:main" ]
