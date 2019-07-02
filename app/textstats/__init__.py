@@ -7,7 +7,7 @@ import spacy
 # import textacy.keyterms as keyterms
 
 from .teidoc import TeiDocument
-from .processing import pipeline
+from .processing import pipeline, counts
 
 app = Flask(__name__)
 
@@ -32,11 +32,10 @@ def textstats():
     for k, v in stats["entities"].items():
         stats[f"num_{k}"] = len(v)
 
-    stats["original_text"] = td.text()
-    stats["text"] = pipeline(td.text())
+    nlp = spacy.load("nl_core_news_sm")
+    doc = nlp(pipeline(td.text()))
 
-    # nlp = spacy.load("nl_core_news_sm")
-    # doc = nlp(text)
+    stats["counts"] = counts(doc)
 
     # stats["sgrank"] = sorted(keyterms.sgrank(doc, ngrams=2, window_width=500), key=lambda x: x[1], reverse=True)
     # stats["textrank"] = sorted(keyterms.textrank(doc), key=lambda x: x[1], reverse=True)

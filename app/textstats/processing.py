@@ -1,4 +1,6 @@
 """ Utilities for preprocessing and extraction """
+from collections import Counter
+import itertools
 import re
 
 
@@ -36,10 +38,7 @@ def normalize_patterns(text, patterns=None):
             patterns: a list of (pattern, replacement) tuples.
     """
     if not patterns:
-        patterns = [(r"&", "en"),
-                    (r"-\s+", ""),
-                    (r"/", ","),
-                    (r"(t)'(\w+)", r"\1\2")]
+        patterns = [(r"&", "en"), (r"-\s+", ""), (r"/", ","), (r"(t)'(\w+)", r"\1\2")]
 
     for pat in patterns:
         text = re.sub(*pat, text)
@@ -57,3 +56,47 @@ def pipeline(text, whitespace=True, dashes=True, quotes=True, patterns=True):
         text = normalize_patterns(text)
 
     return text
+
+
+def bigrams(text):
+    a, b = itertools.tee(text, 2)
+    next(b, None)
+    grams = list(zip(a, b))
+    for ng in grams:
+        if any(x.like_num or x.is_stop for x in ng):
+            continue
+        yield " ".join(n.lemma_ for n in ng)
+
+
+def trigrams(text):
+    a, b, c = itertools.tee(text, 3)
+    next(b, None)
+    next(c, None)
+    next(c, None)
+    grams = list(zip(a, b, c))
+    for ng in grams:
+        if any(x.like_num or x.is_stop for x in ng):
+            continue
+        yield " ".join(n.lemma_ for n in ng)
+
+
+def counts(doc):
+    """ Return basic counts.
+
+    Parameters:
+        doc: text processed by Spacy (spacy.tokens.doc.Doc)
+    """
+    words = [w for w in doc if not w.is_punct and not w.is_space and not w.is_currency]
+    hapaxes = list({w.lemma_ for w in words if not w.is_stop and not w.like_num})
+
+    bgrams = list(bigrams([w for w in words]))
+    tgrams = list(trigrams([w for w in words]))
+
+    return {
+        "n_words": len(words),
+        "n_sents": len(list(doc.sents)),
+        "hapaxes": sorted(hapaxes, reverse=True),
+        "n_hapaxes": len(hapaxes),
+        "bigrams": Counter(bgrams).most_common(10),
+        "trigrams": Counter(tgrams).most_common(10),
+    }
