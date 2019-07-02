@@ -2,17 +2,18 @@ import re
 
 from flask import Flask, request, jsonify
 import spacy
-import textacy as txt
-import textacy.preprocess as prep
-import textacy.keyterms as keyterms
+# import textacy as txt
+# import textacy.keyterms as keyterms
 
 from .teidoc import TeiDocument
+
 
 app = Flask(__name__)
 
 
 def vg_preprocess(text):
     patterns = [
+        (r"\s+", " "),      # Overdreven whitespace
         ("\u2013", "-"),    # EN DASH
         ("\u2014", "-"),    # EM DASH
         (r"-\s+", ""),      # Hyphen on sentence boundary
@@ -53,17 +54,13 @@ def textstats():
 
     text = vg_preprocess(td.text())
 
-    text = prep.normalize_unicode(text)
-    text = prep.normalize_whitespace(text)
-    text = prep.preprocess_text(text, no_currency_symbols=True)
-
     nlp = spacy.load("nl_core_news_sm")
     doc = nlp(text)
 
-    stats["sgrank"] = sorted(keyterms.sgrank(doc, ngrams=2, window_width=500), key=lambda x: x[1], reverse=True)
-    stats["textrank"] = sorted(keyterms.textrank(doc), key=lambda x: x[1], reverse=True)
+    # stats["sgrank"] = sorted(keyterms.sgrank(doc, ngrams=2, window_width=500), key=lambda x: x[1], reverse=True)
+    # stats["textrank"] = sorted(keyterms.textrank(doc), key=lambda x: x[1], reverse=True)
 
-    stats["counts"] = txt.TextStats(doc).basic_counts
+    # stats["counts"] = txt.TextStats(doc).basic_counts
 
     stats["text"] = text
 

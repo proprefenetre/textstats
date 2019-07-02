@@ -21,4 +21,4 @@ COPY . .
 ENV FLASK_APP src/main.py
 ENV FLASK_ENV=development
 
-CMD [ "gunicorn", "-c", "gunicorn.py", "src:main" ]
+CMD [ "gunicorn", "-c", "gunicorn.py", "src:app" ]
