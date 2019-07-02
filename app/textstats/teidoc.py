@@ -1,5 +1,4 @@
 from collections import defaultdict
-import io
 from lxml import etree
 import os.path
 import re

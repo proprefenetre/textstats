@@ -4,7 +4,7 @@ services:
   textstats:
     restart: always
     build:
-      context: ./textstats
+      context: ./app
       dockerfile: Dockerfile
     expose:
       - "5000"
@@ -17,4 +17,4 @@ services:
     ports:
       - "80:80"
     links:
-      - textstats:textstats
+      - app:app

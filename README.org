@@ -19,8 +19,6 @@
 - curl -X POST -d @data/letters/let001.xml -H 'application/xml' http://localhost:5000 :: form
 - curl -X POST -d @data/letters/let001.xml -H 'text/xml' http://localhost:5000 :: data
   - xml before an '=' is interpreted as key, stuff after a value
-
-
 ** BEZIG maak TeiDoc generiek
 ** maak subsets per taal @corpus
 - met bijbehorende word-counts &c
@@ -35,7 +33,6 @@ for k, v in self.nsmap.items():
         self.nsmap.remove_key(None)  # pseudo
 #+END_SRC
 ** NB frog tagger → beter dan spacy voor Nederlands
-
 * Docere
 - Generieke document viewer
 - O.a. Gekaapte Brieven
