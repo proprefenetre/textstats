@@ -60,7 +60,7 @@ def textstats():
     nlp = spacy.load("nl_core_news_sm")
     doc = nlp(text)
 
-    stats["sgrank"]= sorted(keyterms.sgrank(doc, ngrams=2, window_width=500), key=lambda x: x[1], reverse=True)
+    stats["sgrank"] = sorted(keyterms.sgrank(doc, ngrams=2, window_width=500), key=lambda x: x[1], reverse=True)
     stats["textrank"] = sorted(keyterms.textrank(doc), key=lambda x: x[1], reverse=True)
 
     stats["counts"] = txt.TextStats(doc).basic_counts
