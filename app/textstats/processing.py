@@ -2,6 +2,7 @@
 from collections import Counter
 import itertools
 import re
+import spacy
 
 
 def normalize_whitespace(text, spaces=None):
@@ -58,31 +59,26 @@ def pipeline(text, whitespace=True, dashes=True, quotes=True, patterns=True):
     return text
 
 
-def bigrams(text):
-    a, b = itertools.tee(text, 2)
-    next(b, None)
-    grams = list(zip(a, b))
-    for ng in grams:
-        # if any(x.like_num or x.is_stop for x in ng):
-        #     continue
-        try:
-            yield " ".join(n.lemma_ for n in ng)
-        except:
-            yield " ".join(ng)
+def ngrams(text, n=2):
+    if n == 2:
+        a, b = itertools.tee(text, 2)
+        next(b, None)
+        grams = list(zip(a, b))
+    elif n == 3:
+        a, b, c = itertools.tee(text, 3)
+        next(b, None)
+        next(c, None)
+        next(c, None)
+        grams = list(zip(a, b, c))
+    else:
+        raise ValueError(f"invalid n: {n}. Bigrams or trigrams only.")
 
-
-def trigrams(text):
-    a, b, c = itertools.tee(text, 3)
-    next(b, None)
-    next(c, None)
-    next(c, None)
-    grams = list(zip(a, b, c))
     for ng in grams:
-        # if any(x.like_num or x.is_stop for x in ng):
-        #     continue
-        try:
+        if isinstance(ng[0], spacy.tokens.token.Token):
+            if any(x.like_num or x.is_stop for x in ng):
+                continue
             yield " ".join(n.lemma_ for n in ng)
-        except:
+        else:
             yield " ".join(ng)
 
 
@@ -94,19 +90,20 @@ def counts(doc):
     """
     words = [w for w in doc if not w.is_punct and not w.is_space and not w.is_currency]
     hapaxes = list({w.lemma_ for w in words if not w.is_stop and not w.like_num})
-
-    bgrams = list(bigrams([w for w in words]))
-    tgrams = list(trigrams([w for w in words]))
-
-    pos_grams = list(trigrams([w.pos_ for w in words if not w.like_num])) + list(bigrams([w.pos_ for w in words if not w.like_num]))
+    sentences = [s.text for s in doc.sents]
+    bgrams = list(ngrams([w for w in words]))
+    tgrams = list(ngrams([w for w in words], 3))
+    pos_bigrams = list(ngrams([w.pos_ for w in words if not w.like_num]))
+    pos_trigrams = list(ngrams([w.pos_ for w in words if not w.like_num], 3))
 
     return {
         "n_words": len(words),
         "words_freq": Counter(w.lemma_ for w in words).most_common(10),
-        "n_sents": len(list(doc.sents)),
-        "hapaxes": sorted(hapaxes, reverse=True),
         "n_hapaxes": len(hapaxes),
+        "n_sents": len(sentences),
+        "avg_sentence_length": sum(len(s.split()) for s in sentences) / len(sentences),
         "bigrams": Counter(bgrams).most_common(10),
         "trigrams": Counter(tgrams).most_common(10),
-        "constructions": Counter(pos_grams).most_common(10),
+        "abstract_bigrams": Counter(pos_bigrams).most_common(10),
+        "abstract_trigrams": Counter(pos_trigrams).most_common(10),
     }
