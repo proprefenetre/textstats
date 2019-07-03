@@ -1,22 +1,33 @@
 """ Utilities for preprocessing and extraction """
 from collections import Counter
 import itertools
+import logging
 import re
 import spacy
 
 
+log = logging.getLogger(__name__)
+
+
 def normalize_whitespace(text, spaces=None):
     """ Replace two or more subsequent whitespaces, and non-breaking spaces, with a single space. """
+
     if not spaces:
         spaces = [r"\s+", r"\u00a0"]
+
+    log.debug(f"whitespace patterns: {spaces}")
 
     return re.sub("|".join(spaces), " ", text)
 
 
 def normalize_dashes(text, dashes=None):
     """ Replace various dashes with minus. """
+
     if not dashes:
         dashes = [r"\u2013", r"\u2014", r"\u2500"]
+
+    log.debug(f"normalizing dashes: {dashes}")
+
     text = re.sub("|".join(dashes), "-", text)
 
     return text
@@ -26,9 +37,16 @@ def normalize_quotes(text):
     """ Replace left and right quotation marks (single and double) with 'normal' quotes (ascii ' and "). """
 
     # left and right single quotation marks & single guillemets
-    text = re.sub(r"|".join([r"\u2018", r"\u2019", r"\u2039", r"\u203a"]), "'", text)
+    singles = [r"\u2018", r"\u2019", r"\u2039", r"\u203a"]
+    text = re.sub(r"|".join(singles), "'", text)
 
-    text = re.sub(r"|".join([r"\u201c", r"\u201d", r"\u00ab", r"\u00bb"]), '"', text)
+    log.debug(f"normalizing single quotes: {singles}")
+
+    doubles = [r"\u201c", r"\u201d", r"\u00ab", r"\u00bb"]
+    text = re.sub(r"|".join(doubles), '"', text)
+
+    log.debug(f"normalizing double quotes: {doubles}")
+
     return text
 
 
@@ -38,8 +56,11 @@ def normalize_patterns(text, patterns=None):
         parameters:
             patterns: a list of (pattern, replacement) tuples.
     """
+
     if not patterns:
         patterns = [(r"&", "en"), (r"-\s+", ""), (r"/", ","), (r"(t)'(\w+)", r"\1\2")]
+
+    log.debug(f"substitution patterns: {patterns}")
 
     for pat in patterns:
         text = re.sub(*pat, text)
@@ -47,6 +68,7 @@ def normalize_patterns(text, patterns=None):
 
 
 def pipeline(text, whitespace=True, dashes=True, quotes=True, patterns=True):
+
     if whitespace:
         text = normalize_whitespace(text).strip()
     if dashes:
@@ -71,6 +93,7 @@ def ngrams(text, n=2):
         next(c, None)
         grams = list(zip(a, b, c))
     else:
+        logging.error(f"invalid n: {n}. Bigrams or trigrams only.")
         raise ValueError(f"invalid n: {n}. Bigrams or trigrams only.")
 
     for ng in grams:
