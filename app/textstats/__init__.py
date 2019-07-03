@@ -22,7 +22,7 @@ app = Flask(__name__)
 def logs():
     with open(log_file, "r") as f:
         logs = f.read()
-    return logs
+    return jsonify(logs)
 
 
 @app.route("/", methods=["POST"])
@@ -58,6 +58,7 @@ def textstats():
     log.debug("Add counts")
 
     log.debug(f"text: {doc.text}")
+    log.debug(80 * "_")
 
     # stats["sgrank"] = sorted(keyterms.sgrank(doc, ngrams=2, window_width=500), key=lambda x: x[1], reverse=True)
     # stats["textrank"] = sorted(keyterms.textrank(doc), key=lambda x: x[1], reverse=True)

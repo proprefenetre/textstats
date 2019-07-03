@@ -112,8 +112,17 @@ def counts(doc):
         doc: text processed by Spacy (spacy.tokens.doc.Doc)
     """
     words = [w for w in doc if not w.is_punct and not w.is_space and not w.is_currency]
-    hapaxes = list({w.lemma_ for w in words if not w.is_stop and not w.like_num})
+    log.debug(f"Document length: {len(words)}")
+    word_frequencies = Counter(w.lemma_ for w in words if not w.is_stop)
+    hapaxes = [w for w, c in word_frequencies.items() if c == 1]
+
     sentences = [s.text for s in doc.sents]
+    try:
+        avg_sent_length = len(words) / len(sentences)
+    except ZeroDivisionError:
+        log.error(f"ZeroDivisionError. words: {len(words)}\nsentences: {len(sentences)}\n")
+        avg_sent_length = 0
+
     bgrams = list(ngrams([w for w in words]))
     tgrams = list(ngrams([w for w in words], 3))
     pos_bigrams = list(ngrams([w.pos_ for w in words if not w.like_num]))
@@ -121,10 +130,11 @@ def counts(doc):
 
     return {
         "n_words": len(words),
-        "words_freq": Counter(w.lemma_ for w in words).most_common(10),
+        "words_freq": word_frequencies.most_common(10),
         "n_hapaxes": len(hapaxes),
+        "hapaxes": hapaxes,
         "n_sents": len(sentences),
-        "avg_sentence_length": sum(len(s.split()) for s in sentences) / len(sentences),
+        "avg_sentence_length": avg_sent_length,
         "bigrams": Counter(bgrams).most_common(10),
         "trigrams": Counter(tgrams).most_common(10),
         "abstract_bigrams": Counter(pos_bigrams).most_common(10),

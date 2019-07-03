@@ -63,7 +63,7 @@ class TEIDocument:
             nsmap = self.tree.nsmap
 
         if not nsmap:
-            log.warning(f"No namespaces in document {self.xml[:50]}")
+            log.warning(f"No namespaces in document.")
         else:
             log.debug(f"Found namespaces: {nsmap}")
             for k, v in nsmap.items():
