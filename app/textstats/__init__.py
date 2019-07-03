@@ -1,4 +1,6 @@
 import logging
+import logging.config
+import os
 import re
 
 from flask import Flask, request, jsonify
@@ -8,43 +10,55 @@ from .teidoc import TeiDocument
 from .processing import pipeline, counts
 
 
-logging.config.fileConfig('logging_config.ini')
-logger = logging.getLogger(__name__)
+log_file = os.path.join(os.path.dirname(__file__), "textstats.log")
+FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+logging.basicConfig(filename=log_file, filemode="w", format=FORMAT, level=logging.DEBUG)
+log = logging.getLogger(__name__)
 
 
 app = Flask(__name__)
 
 
+@app.route("/logs", methods=["GET"])
+def logs():
+    with open(log_file, "r") as f:
+        logs = f.read()
+    return logs
+
+
 @app.route("/", methods=["POST"])
 def textstats():
     if request.data and isinstance(request.data, bytes):
-        doc = request.data
+        data = request.data
     elif request.form:
         if request.form.get("file", None):
-            doc = request.form.get("file")
+            data = request.form.get("file")
         else:
             return "Invalid request\n"
     else:
         return "No document specified\n"
 
-    td = TeiDocument(doc)
-    logger.debug(f"Created TeiDocument")
+    td = TeiDocument()
+    td.load(data)
+    log.debug(f"TEIDocument loaded: {td.docinfo()}")
     stats = dict()
 
     # TODO: add names
+    log.debug("Add entities")
     stats["entities"] = td.entities()
     for k, v in stats["entities"].items():
         stats[f"num_{k}"] = len(v)
-    logger.debug("Add entities")
 
+    log.debug("Load Spacy model")
     nlp = spacy.load("nl_core_news_sm")
-    logger.debug("Load spacy nl model")
 
+    log.debug("Normalize text")
     doc = nlp(pipeline(td.text()))
-    logger.debug("Normalize text")
 
     stats["counts"] = counts(doc)
-    logger.debug("Add counts")
+    log.debug("Add counts")
+
+    log.debug(f"text: {doc.text}")
 
     # stats["sgrank"] = sorted(keyterms.sgrank(doc, ngrams=2, window_width=500), key=lambda x: x[1], reverse=True)
     # stats["textrank"] = sorted(keyterms.textrank(doc), key=lambda x: x[1], reverse=True)

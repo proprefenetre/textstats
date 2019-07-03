@@ -6,23 +6,28 @@ import re
 import spacy
 
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 
 def normalize_whitespace(text, spaces=None):
     """ Replace two or more subsequent whitespaces, and non-breaking spaces, with a single space. """
-    logger.debug(f"{__name__}")
+
     if not spaces:
         spaces = [r"\s+", r"\u00a0"]
+
+    log.debug(f"whitespace patterns: {spaces}")
 
     return re.sub("|".join(spaces), " ", text)
 
 
 def normalize_dashes(text, dashes=None):
     """ Replace various dashes with minus. """
-    logger.debug(f"{__name__}")
+
     if not dashes:
         dashes = [r"\u2013", r"\u2014", r"\u2500"]
+
+    log.debug(f"normalizing dashes: {dashes}")
+
     text = re.sub("|".join(dashes), "-", text)
 
     return text
@@ -30,11 +35,18 @@ def normalize_dashes(text, dashes=None):
 
 def normalize_quotes(text):
     """ Replace left and right quotation marks (single and double) with 'normal' quotes (ascii ' and "). """
-    logger.debug(f"{__name__}")
-    # left and right single quotation marks & single guillemets
-    text = re.sub(r"|".join([r"\u2018", r"\u2019", r"\u2039", r"\u203a"]), "'", text)
 
-    text = re.sub(r"|".join([r"\u201c", r"\u201d", r"\u00ab", r"\u00bb"]), '"', text)
+    # left and right single quotation marks & single guillemets
+    singles = [r"\u2018", r"\u2019", r"\u2039", r"\u203a"]
+    text = re.sub(r"|".join(singles), "'", text)
+
+    log.debug(f"normalizing single quotes: {singles}")
+
+    doubles = [r"\u201c", r"\u201d", r"\u00ab", r"\u00bb"]
+    text = re.sub(r"|".join(doubles), '"', text)
+
+    log.debug(f"normalizing double quotes: {doubles}")
+
     return text
 
 
@@ -44,9 +56,11 @@ def normalize_patterns(text, patterns=None):
         parameters:
             patterns: a list of (pattern, replacement) tuples.
     """
-    logger.debug(f"{__name__}")
+
     if not patterns:
         patterns = [(r"&", "en"), (r"-\s+", ""), (r"/", ","), (r"(t)'(\w+)", r"\1\2")]
+
+    log.debug(f"substitution patterns: {patterns}")
 
     for pat in patterns:
         text = re.sub(*pat, text)
@@ -54,7 +68,7 @@ def normalize_patterns(text, patterns=None):
 
 
 def pipeline(text, whitespace=True, dashes=True, quotes=True, patterns=True):
-    logger.debug(f"{__name__}")
+
     if whitespace:
         text = normalize_whitespace(text).strip()
     if dashes:
@@ -68,7 +82,6 @@ def pipeline(text, whitespace=True, dashes=True, quotes=True, patterns=True):
 
 
 def ngrams(text, n=2):
-    logger.debug(f"{__name__}")
     if n == 2:
         a, b = itertools.tee(text, 2)
         next(b, None)
@@ -80,6 +93,7 @@ def ngrams(text, n=2):
         next(c, None)
         grams = list(zip(a, b, c))
     else:
+        logging.error(f"invalid n: {n}. Bigrams or trigrams only.")
         raise ValueError(f"invalid n: {n}. Bigrams or trigrams only.")
 
     for ng in grams:
@@ -97,7 +111,6 @@ def counts(doc):
     Parameters:
         doc: text processed by Spacy (spacy.tokens.doc.Doc)
     """
-    logger.debug(f"{__name__}")
     words = [w for w in doc if not w.is_punct and not w.is_space and not w.is_currency]
     hapaxes = list({w.lemma_ for w in words if not w.is_stop and not w.like_num})
     sentences = [s.text for s in doc.sents]
