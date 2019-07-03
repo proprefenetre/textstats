@@ -9,20 +9,20 @@ import pytest
 
 @pytest.fixture
 def teidocument():
-    from src.teidoc import TeiDocument
+    from src.teidoc import TEIDocument
     with open("/Users/niels/projects/vangogh/data/tei-example.xml", "rb") as f:
-        return TeiDocument(f)
+        return TEIDocument(f)
 
 
 @pytest.fixture
 def entities():
-    from src.teidoc import TeiDocument
-    return TeiDocument("/Users/niels/projects/vangogh/data/tei-example.xml").entities()
+    from src.teidoc import TEIDocument
+    return TEIDocument("/Users/niels/projects/vangogh/data/tei-example.xml").entities()
 
 
 def test_teidoc(teidocument):
-    from src.teidoc import TeiDocument
-    assert isinstance(teidocument, TeiDocument)
+    from src.teidoc import TEIDocument
+    assert isinstance(teidocument, TEIDocument)
 
 
 # def test_get_nsmap(teidocument):

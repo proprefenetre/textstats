@@ -1,12 +1,11 @@
 import logging
-import logging.config
 import os
 import re
 
 from flask import Flask, request, jsonify
 import spacy
 
-from .teidoc import TeiDocument
+from .teidoc import TEIDocument
 from .processing import pipeline, counts
 
 
@@ -38,7 +37,7 @@ def textstats():
     else:
         return "No document specified\n"
 
-    td = TeiDocument()
+    td = TEIDocument()
     td.load(data)
     log.debug(f"TEIDocument loaded: {td.docinfo()}")
     stats = dict()

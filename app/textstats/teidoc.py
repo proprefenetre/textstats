@@ -9,7 +9,7 @@ import unicodedata
 log = logging.getLogger(__name__)
 
 
-class TeiDocument:
+class TEIDocument:
     """This class represents a TEI-document
 
     Parameters
