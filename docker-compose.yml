@@ -1,14 +1,6 @@
 version: "3"
 
 services:
-  textstats:
-    restart: always
-    build:
-      context: ./app
-      dockerfile: Dockerfile
-    expose:
-      - "5000"
-
   nginx:
     restart: always
     build:
@@ -17,4 +9,12 @@ services:
     ports:
       - "80:80"
     links:
-      - app:app
+      - textstats:app
+
+  textstats:
+    restart: always
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    expose:
+      - "5000"

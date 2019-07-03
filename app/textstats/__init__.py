@@ -3,9 +3,6 @@ import re
 from flask import Flask, request, jsonify
 import spacy
 
-# import textacy as txt
-# import textacy.keyterms as keyterms
-
 from .teidoc import TeiDocument
 from .processing import pipeline, counts
 
