@@ -14,9 +14,7 @@ def normalize_whitespace(text, spaces=None):
 
     if not spaces:
         spaces = [r"\s+", r"\u00a0"]
-
     log.debug(f"whitespace patterns: {spaces}")
-
     return re.sub("|".join(spaces), " ", text).strip()
 
 
@@ -25,9 +23,7 @@ def normalize_dashes(text, dashes=None):
 
     if not dashes:
         dashes = [r"\u2013", r"\u2014", r"\u2500"]
-
     log.debug(f"normalizing dashes: {dashes}")
-
     text = re.sub("|".join(dashes), "-", text)
 
     return text
@@ -39,12 +35,10 @@ def normalize_quotes(text):
     # left and right single quotation marks & single guillemets
     singles = [r"\u2018", r"\u2019", r"\u2039", r"\u203a"]
     text = re.sub(r"|".join(singles), "'", text)
-
     log.debug(f"normalizing single quotes: {singles}")
 
     doubles = [r"\u201c", r"\u201d", r"\u00ab", r"\u00bb"]
     text = re.sub(r"|".join(doubles), '"', text)
-
     log.debug(f"normalizing double quotes: {doubles}")
 
     return text
@@ -59,11 +53,10 @@ def normalize_patterns(text, patterns=None):
 
     if not patterns:
         patterns = [(r"&", "en"), (r"-\s+", ""), (r"/", ","), (r"(t)'(\w+)", r"\1\2")]
-
     log.debug(f"substitution patterns: {patterns}")
-
     for pat in patterns:
         text = re.sub(*pat, text)
+
     return text
 
 
@@ -82,6 +75,7 @@ def pipeline(text, whitespace=True, dashes=True, quotes=True, patterns=True):
 
 
 def ngrams(text, n=2):
+
     if n == 2:
         a, b = itertools.tee(text, 2)
         next(b, None)
@@ -140,3 +134,8 @@ def counts(doc):
         "abstract_bigrams": Counter(pos_bigrams).most_common(10),
         "abstract_trigrams": Counter(pos_trigrams).most_common(10),
     }
+
+
+def keyterms(doc, n=10):
+    """ Extract key terms from doc using the textrank algorithm """
+    pass
