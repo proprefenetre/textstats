@@ -6,14 +6,13 @@ from flask import Flask, request, jsonify
 import spacy
 
 from .teidoc import TEIDocument
-from .processing import pipeline, counts
+from .processing import pipeline, stats
 
 
 log_file = os.path.join(os.path.dirname(__file__), "textstats.log")
 FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 logging.basicConfig(filename=log_file, filemode="w", format=FORMAT, level=logging.DEBUG)
 log = logging.getLogger(__name__)
-
 
 app = Flask(__name__)
 
@@ -40,26 +39,21 @@ def textstats():
     td = TEIDocument()
     td.load(data)
     log.debug(f"TEIDocument loaded: {td.docinfo()}")
-    stats = dict()
+    text_stats = dict()
 
     # TODO: add names
     if td.entities():
         log.debug("Add entities")
-        stats["entities"] = td.entities()
-        for k, v in stats["entities"].items():
-            stats[f"num_{k}"] = len(v)
+        text_stats["entities"] = td.entities()
+        for k, v in text_stats["entities"].items():
+            text_stats[f"num_{k}"] = len(v)
 
-    log.debug("Load Spacy model")
     nlp = spacy.load("nl_core_news_sm")
 
     doc = nlp(pipeline(td.text()))
 
-    stats["counts"] = counts(doc)
+    text_stats["counts"] = stats(doc)
 
-    log.debug(f"text: {doc.text}")
-    log.debug(80 * "_")
+    log.debug(f"processed text: {doc.text}")
 
-    # stats["sgrank"] = sorted(keyterms.sgrank(doc, ngrams=2, window_width=500), key=lambda x: x[1], reverse=True)
-    # stats["textrank"] = sorted(keyterms.textrank(doc), key=lambda x: x[1], reverse=True)
-
-    return jsonify(stats)
+    return jsonify(text_stats)

@@ -3,8 +3,11 @@ from collections import Counter
 import itertools
 import logging
 import re
-import spacy
 
+import networkx as nx
+from sklearn.feature_extraction.text import TfidfVectorizer
+import spacy
+import textacy.keyterms
 
 log = logging.getLogger(__name__)
 
@@ -52,8 +55,8 @@ def normalize_patterns(text, patterns=None):
     """
 
     if not patterns:
-        patterns = [(r"&", "en"), (r"-\s+", ""), (r"/", ","), (r"(t)'(\w+)", r"\1\2")]
-    log.debug(f"substitution patterns: {patterns}")
+        patterns = [(r"&", "en"), (r"-\s+", ""), (r"/", ","), (r"(t)'(\w+)", r"\1\2"), (r"_", " ")]
+    log.debug(f"substitution patterns: {patterns}\n")
     for pat in patterns:
         text = re.sub(*pat, text)
 
@@ -99,24 +102,28 @@ def ngrams(text, n=2):
             yield " ".join(ng)
 
 
-def counts(doc):
+def key_sentences(sents, n=10):
+    tfidf = TfidfVectorizer().fit_transform(sents)
+    sim_graph = nx.from_scipy_sparse_matrix(tfidf * tfidf.T)
+    results = sorted(list(zip(sents, nx.pagerank(sim_graph).values())), key=lambda x: x[1], reverse=True)
+    return results[:n]
+
+
+def stats(doc):
     """ Return basic counts.
 
     Parameters:
         doc: text processed by Spacy (spacy.tokens.doc.Doc)
     """
+    if len(doc) < 1:
+        log.warning(f"Empty document")
+        return {}
+
     words = [w for w in doc if not w.is_punct and not w.is_space and not w.is_currency]
-    log.debug(f"Document length: {len(words)}")
-    word_frequencies = Counter(w.lemma_ for w in words if not w.is_stop)
-    hapaxes = [w for w, c in word_frequencies.items() if c == 1]
-
+    word_frequencies = Counter(w.lemma_ for w in words if not w.is_stop
+                               and not w.pos in ["PART", "PRON", "NUM", "CONJ", "CCONJ", "DET"])
     sentences = [s.text for s in doc.sents]
-    try:
-        avg_sent_length = len(words) / len(sentences)
-    except ZeroDivisionError:
-        log.error(f"ZeroDivisionError. words: {len(words)}\nsentences: {len(sentences)}\n")
-        avg_sent_length = 0
-
+    avg_sent_length = len(words) / len(sentences)
     bgrams = list(ngrams([w for w in words]))
     tgrams = list(ngrams([w for w in words], 3))
     pos_bigrams = list(ngrams([w.pos_ for w in words if not w.like_num]))
@@ -125,17 +132,12 @@ def counts(doc):
     return {
         "n_words": len(words),
         "words_freq": word_frequencies.most_common(10),
-        "n_hapaxes": len(hapaxes),
-        "hapaxes": hapaxes,
         "n_sents": len(sentences),
         "avg_sentence_length": avg_sent_length,
         "bigrams": Counter(bgrams).most_common(10),
         "trigrams": Counter(tgrams).most_common(10),
         "abstract_bigrams": Counter(pos_bigrams).most_common(10),
         "abstract_trigrams": Counter(pos_trigrams).most_common(10),
+        "key_sentences": key_sentences(sentences),
+        "key_terms": textacy.keyterms.textrank(doc)
     }
-
-
-def keyterms(doc, n=10):
-    """ Extract key terms from doc using the textrank algorithm """
-    pass
