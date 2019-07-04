@@ -17,7 +17,7 @@ def normalize_whitespace(text, spaces=None):
 
     log.debug(f"whitespace patterns: {spaces}")
 
-    return re.sub("|".join(spaces), " ", text)
+    return re.sub("|".join(spaces), " ", text).strip()
 
 
 def normalize_dashes(text, dashes=None):
@@ -60,7 +60,7 @@ def normalize_patterns(text, patterns=None):
     if not patterns:
         patterns = [(r"&", "en"), (r"-\s+", ""), (r"/", ","), (r"(t)'(\w+)", r"\1\2")]
 
-    log.debug(f"substitution patterns: {patterns}")
+    log.debug(f"substitution patterns: {chr(10).join(patterns)}")
 
     for pat in patterns:
         text = re.sub(*pat, text)
@@ -70,7 +70,7 @@ def normalize_patterns(text, patterns=None):
 def pipeline(text, whitespace=True, dashes=True, quotes=True, patterns=True):
 
     if whitespace:
-        text = normalize_whitespace(text).strip()
+        text = normalize_whitespace(text)
     if dashes:
         text = normalize_dashes(text)
     if quotes:

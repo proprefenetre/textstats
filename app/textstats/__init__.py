@@ -43,19 +43,18 @@ def textstats():
     stats = dict()
 
     # TODO: add names
-    log.debug("Add entities")
-    stats["entities"] = td.entities()
-    for k, v in stats["entities"].items():
-        stats[f"num_{k}"] = len(v)
+    if td.entities():
+        log.debug("Add entities")
+        stats["entities"] = td.entities()
+        for k, v in stats["entities"].items():
+            stats[f"num_{k}"] = len(v)
 
     log.debug("Load Spacy model")
     nlp = spacy.load("nl_core_news_sm")
 
-    log.debug("Normalize text")
     doc = nlp(pipeline(td.text()))
 
     stats["counts"] = counts(doc)
-    log.debug("Add counts")
 
     log.debug(f"text: {doc.text}")
     log.debug(80 * "_")
