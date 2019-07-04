@@ -60,7 +60,7 @@ def normalize_patterns(text, patterns=None):
     if not patterns:
         patterns = [(r"&", "en"), (r"-\s+", ""), (r"/", ","), (r"(t)'(\w+)", r"\1\2")]
 
-    log.debug(f"substitution patterns: {chr(10).join(patterns)}")
+    log.debug(f"substitution patterns: {patterns}")
 
     for pat in patterns:
         text = re.sub(*pat, text)
