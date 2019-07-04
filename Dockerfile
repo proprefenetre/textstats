@@ -18,7 +18,4 @@ RUN python -m spacy download nl_core_news_sm
 # Creating folders, and files for a project:
 COPY . .
 
-ENV FLASK_APP=src
-ENV FLASK_ENV=development
-
 CMD [ "gunicorn", "-c", "gunicorn.py", "src:app" ]
