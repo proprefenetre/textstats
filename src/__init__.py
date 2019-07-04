@@ -50,7 +50,7 @@ def textstats():
 
     nlp = spacy.load("nl_core_news_sm")
 
-    doc = nlp(pipeline(td.text()))
+    doc = nlp(pipeline(" ".join(td.text())))
 
     text_stats["counts"] = stats(doc)
 

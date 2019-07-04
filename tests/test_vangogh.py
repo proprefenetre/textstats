@@ -39,7 +39,7 @@ def test_teidoc(teidocument):
 
 # def test_text(teidocument):
 #     original_text = """Den Haag, 29 september 1872. Waarde Theo, Dank voor je brief, het deed mij genoegen dat je weer goed aangekomen zijt. Ik heb je de eerste dagen ge- mist & het was mij vreemd je niet te vinden als ik s’mid- dags t’huis kwam. Wij hebben prettige dagen sa- men gehad, en tusschen de droppeltjes door toch nog al eens gewandeld & het een en ander gezien. Wat vreesselijk weer, je zult het wel benauwd hebben op je wandelingen naar Oisterwijk. Gisteren is het hard- draverij geweest ter gelegenheid van de tentoonstelling, maar de illumi- natie & het vuurwerk zijn uit gesteld, om het slechte weer, het is dus maar goed dat je niet gebleven zijt om die te zien. Groeten van de familie Haanebeek & Roos. Steeds je liefh. Vincent"""
-#     assert original_text == teidocument.text()
+#     assert original_text == teidocument.text()[0]
 
 
 # def test_unicode_characters(teidocument):

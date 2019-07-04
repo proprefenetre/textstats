@@ -140,7 +140,7 @@ class TEIDocument:
                 layer.append(elt.xpath("string()").strip())
             text.append(" ".join(layer))
 
-        return text if layers else text[0]
+        return text
 
     def _unicode_characters(self):
         """Return all unique unicode codepoints in the original text. """
@@ -153,7 +153,7 @@ class TEIDocument:
             return False
 
         chars = []
-        for c in {ch for ch in self.text()}:
+        for c in {ch for ch in " ".join(self.text())}:
             if is_unicode(c):
                 chars.append(
                     {
