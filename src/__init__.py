@@ -21,7 +21,7 @@ app = Flask(__name__)
 def logs():
     with open(log_file, "r") as f:
         logs = f.read()
-    return jsonify(logs)
+    return logs
 
 
 @app.route("/", methods=["POST"])
