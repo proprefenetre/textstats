@@ -65,11 +65,10 @@ class TEIDocument:
         if not nsmap:
             log.warning(f"No namespaces in document.")
         else:
-            log.debug(f"Found namespaces: {nsmap}")
-            for k, v in nsmap.items():
-                if k is None:
-                    nsmap["tei"] = nsmap.pop(None)
-                    log.debug(f"Replaced default namespace: {nsmap}")
+            # for k, v in nsmap.items():
+            #     if k is None:
+            nsmap["tei"] = nsmap.pop(None)
+            log.debug(f"Replaced default namespace: {nsmap}")
         return nsmap
 
     def _as_ElementTree(self):
@@ -111,6 +110,7 @@ class TEIDocument:
         for e in self.tree.xpath(expr, namespaces=self.nsmap):
             ents = entities[e.get("type")]
             entities[e.get("type")].extend(
+                # filter
                 [k for k in e.get("key", "").split() if k not in ents]
             )
         return entities
@@ -133,6 +133,7 @@ class TEIDocument:
         for d in self.tree.xpath(expr, namespaces=self.nsmap):
             layer = []
             div = "tei:div" if self.nsmap.get("tei", None) else "div"
+            # filter/map
             for elt in d:
                 if elt.tag == div:
                     continue
