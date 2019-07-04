@@ -55,7 +55,13 @@ def normalize_patterns(text, patterns=None):
     """
 
     if not patterns:
-        patterns = [(r"&", "en"), (r"-\s+", ""), (r"/", ","), (r"(t)'(\w+)", r"\1\2"), (r"_", " ")]
+        patterns = [
+            (r"&", "en"),
+            (r"-\s+", ""),
+            (r"/", ","),
+            (r"(t)'(\w+)", r"\1\2"),
+            (r"_", " "),
+        ]
     log.debug(f"substitution patterns: {patterns}\n")
     for pat in patterns:
         text = re.sub(*pat, text)
@@ -105,7 +111,11 @@ def ngrams(text, n=2):
 def key_sentences(sents, n=10):
     tfidf = TfidfVectorizer().fit_transform(sents)
     sim_graph = nx.from_scipy_sparse_matrix(tfidf * tfidf.T)
-    results = sorted(list(zip(sents, nx.pagerank(sim_graph).values())), key=lambda x: x[1], reverse=True)
+    results = sorted(
+        list(zip(sents, nx.pagerank(sim_graph).values())),
+        key=lambda x: x[1],
+        reverse=True,
+    )
     return results[:n]
 
 
@@ -120,8 +130,12 @@ def stats(doc):
         return {}
 
     words = [w for w in doc if not w.is_punct and not w.is_space and not w.is_currency]
-    word_frequencies = Counter(w.lemma_ for w in words if not w.is_stop
-                               and not w.pos in ["PART", "PRON", "NUM", "CONJ", "CCONJ", "DET"])
+    word_frequencies = Counter(
+        w.lemma_
+        for w in words
+        if not w.is_stop
+        and not w.pos in ["PART", "PRON", "NUM", "CONJ", "CCONJ", "DET"]
+    )
     sentences = [s.text for s in doc.sents]
     avg_sent_length = len(words) / len(sentences)
     bgrams = list(ngrams([w for w in words]))
@@ -139,5 +153,5 @@ def stats(doc):
         "abstract_bigrams": Counter(pos_bigrams).most_common(10),
         "abstract_trigrams": Counter(pos_trigrams).most_common(10),
         "key_sentences": key_sentences(sentences),
-        "key_terms": textacy.keyterms.textrank(doc)
+        "key_terms": textacy.keyterms.textrank(doc),
     }
