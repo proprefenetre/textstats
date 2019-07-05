@@ -3,7 +3,7 @@
 This is an example of a service for use in the [CLARIAH WP3 Virtual Research
 Environment](https://github.com/meertensinstituut/clariah-wp3-vre) that is currently under development.
 
-It provides basic statistics and key word/sentence extraction for TEI-encoded documents.
+The service provides basic statistics and keyword/sentence extraction for TEI-encoded documents.
 
 # Request
 
