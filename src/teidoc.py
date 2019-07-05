@@ -5,6 +5,7 @@ from lxml import etree
 import os.path
 import unicodedata
 
+from werkzeug.datastructures import FileStorage
 
 log = logging.getLogger(__name__)
 
@@ -23,31 +24,33 @@ class TEIDocument:
         self.tree = None
         self.nsmap = None
 
-    def load(self, xml):
-        """ Read xml from file and parse it.
+    def load(self, source):
+        """ Read source from file and parse it.
 
         Parameters
         ----------
-        xml: string containing the path to an xml-file or xml.
+        source: string containing the path to an source-file or source.
         """
+        if not source:
+            raise ValueError("No file provided")
 
-        if os.path.isfile(os.path.abspath(xml)):
-            log.debug(f"{xml}: is file and exists")
-            with open(xml, "r") as f:
+        if isinstance(source, FileStorage):
+            xml = source.read()
+            log.debug(f"source: {type(source)}")
+            log.debug(f"xml: {type(xml)}")
+        elif os.path.isfile(os.path.abspath(source)):
+            log.debug(f"{source}: is file and exists")
+            with open(source, "r") as f:
                 xml = f.read()
 
         if isinstance(xml, bytes):
             log.debug(f"type xml: {type(xml)} - decoding to str")
             xml = xml.decode()
 
-        xml = html.unescape(xml)
-        log.debug("Unescaped html entities")
+        xml = html.unescape(xml).encode("utf-8")
 
-        self.xml = xml.encode("utf-8")
-        log.debug(f"type xml: {type(self.xml)}")
-
-        self.tree = etree.fromstring(self.xml, self.parser)
-        log.debug(f"type self.tree: {type(self.tree)}")
+        self.tree = etree.fromstring(xml, self.parser)
+        log.debug(f"self.tree: {type(self.tree)}")
 
         self.nsmap = self._get_nsmap()
         log.debug("loaded TEIDocument")
@@ -57,6 +60,7 @@ class TEIDocument:
 
         the default namespace is replaced with 'tei'
         """
+        nsmap = None
         if isinstance(self.tree, etree._ElementTree):
             nsmap = self.tree.getroot().nsmap
         elif isinstance(self.tree, etree._Element):
@@ -124,7 +128,7 @@ class TEIDocument:
         layers: bool
             if true, return a list with the text of each <div> in the <body>
         """
-        text = []
+        text = defaultdict(list)
         if self.nsmap:
             expr = "//tei:text//tei:body//tei:div"
         else:
@@ -133,12 +137,12 @@ class TEIDocument:
         for d in self.tree.xpath(expr, namespaces=self.nsmap):
             layer = []
             div = "tei:div" if self.nsmap.get("tei", None) else "div"
-            # filter/map
             for elt in d:
+                # prevent nested layers
                 if elt.tag == div:
                     continue
                 layer.append(elt.xpath("string()").strip())
-            text.append(" ".join(layer))
+            text[d.get("type")].append(" ".join(layer))
 
         return text
 
@@ -153,7 +157,7 @@ class TEIDocument:
             return False
 
         chars = []
-        for c in {ch for ch in " ".join(self.text())}:
+        for c in {ch for ch in " ".join(self.text().values())}:
             if is_unicode(c):
                 chars.append(
                     {
