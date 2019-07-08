@@ -3,6 +3,7 @@ import os
 import re
 
 from flask import Flask, request, jsonify, session
+import langdetect
 import spacy
 
 from .teidoc import TEIDocument
@@ -26,12 +27,13 @@ def logs():
 
 @app.route("/", methods=["POST"])
 def textstats():
-    log.debug(f"HEADERS:\n {request.headers}\n"
-              f"REQ_path: {request.path}\n"
-              f"ARGS: {request.args}\n"
-              f"DATA: {request.data}\n"
-              f"FORM: {list(request.form.keys())}\n"
-              f"FILES: {request.files}\n"
+    log.debug(
+        f"HEADERS:\n{request.headers}\n"
+        f"REQ_path: {request.path}\n"
+        f"ARGS: {request.args}\n"
+        f"DATA: {request.data}\n"
+        f"FORM: {list(request.form.keys())}\n"
+        f"FILES: {request.files}\n"
     )
 
     if request.method == "POST":
@@ -44,32 +46,42 @@ def textstats():
             else:
                 log.debug(f"file provided: {data}")
             layer = request.form.get("layer", False)
-            entitiies = request.form.get("entities", False)
-            log.debug(f"Merge layers: {layer}\nentities: {entitiies}")
+            entities = request.form.get("entities", False)
+            log.debug(f"Merge layers: {layer}\nentities: {entities}")
         else:
             return "No document specified\n"
 
     td = TEIDocument()
     td.load(data)
-    log.debug(f"TEIDocument loaded: {request.files.get('filename', None)}:{td.docinfo()}")
+    log.debug(
+        f"TEIDocument loaded: {request.files.get('filename', None)}:{td.docinfo()}"
+    )
     text_stats = dict()
 
-    # TODO: add entity names (Van Gogh)
-    if entitiies:
-        log.debug("Extracting entities")
+    if entities:
+        log.debug(f"Entities {entities}")
         text_stats["entities"] = td.entities()
         for k, v in text_stats["entities"].items():
             text_stats[f"num_{k}"] = len(v)
 
-    nlp = spacy.load("nl_core_news_sm")
-    nlp.Defaults.stop_words.add("zoo")
-    nlp.Defaults.stop_words.add("zoo'n")
-
-    log.debug(f"text layers: {td.text().keys()}")
     if layer:
-        text = " ".join(td.text().get(layer))
+        if layer in td.text().keys():
+            text = " ".join(td.text().get(layer))
+        else:
+            log.debug(f"'{layer}' not in layers")
+            return f"Invalid text layer: '{layer}'"
     else:
         text = " ".join(td.text().values())
+
+    log.debug(f"text: {text[:40]}")
+
+    models = {"en": "en_core_web_sm", "fr": "fr_core_news_sm", "nl": "nl_core_news_sm"}
+
+    lang = langdetect.detect(text)
+
+    log.debug(f"language: {lang}")
+
+    nlp = spacy.load(models[lang])
 
     doc = nlp(pipeline(text))
 

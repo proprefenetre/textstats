@@ -58,13 +58,13 @@ def normalize_patterns(text, patterns=None):
 
     if not patterns:
         patterns = [
-            (r"&", "en"),
+            # (r"&", "en"),
             (r"-\s+", ""),
             (r"/", ","),
             (r"(t)'(\w+)", r"\1\2"),
             (r"_", " "),
             (r"\u00b7", ","),
-            ("'t", "het")
+            ("'t", "het"),
         ]
     log.debug(f"substitution patterns: {patterns}\n")
     for pat in patterns:
@@ -105,12 +105,16 @@ class Stats:
     Parameters:
         doc: spacy.tokens.doc.Doc
     """
+
     def __init__(self, doc):
-        if len(doc) < 1:
-            log.warning(f"Empty document")
-            return {}
+        if len(doc) < 50:
+            log.warning(f"Document is very short")
+            return None
+        log.debug("Counting")
         self.doc = doc
-        self.words = [w for w in doc if not w.is_punct and not w.is_space and not w.is_currency]
+        self.words = [
+            w for w in doc if not w.is_punct and not w.is_space and not w.is_currency
+        ]
         self.n_words = len(self.words)
         self.avg_word_length = sum(len(w) for w in self.words) / self.n_words
         self.sentences = [s.text for s in doc.sents]
@@ -118,29 +122,31 @@ class Stats:
         self.avg_sent_length = self.n_words / self.n_sentences
 
     @property
-    def word_frequencies(self):
-        return Counter(w.lemma_ for w in self.words)
+    def word_frequencies(
+        self, posfilter=("ADP", "CONJ", "CCONJ", "DET", "PART", "PRON")
+    ):
+        return Counter(w.lemma_ for w in self.words if w.pos_ not in posfilter)
 
     @property
     def nouns(self):
-        nouns = [w.lemma_ for w in filter(lambda t: t.pos_ == "NOUN", self.words)]
-        log.debug(f"Nouns: {nouns}")
-        return Counter(nouns)
+        return Counter(w.lemma_ for w in self.words if w.pos_ == "NOUN")
 
     @property
     def verbs(self):
-        verbs = [w.lemma_ for w in filter(lambda t: t.pos_ == "VERB", self.words)]
-        log.debug(f"Verbs: {verbs}")
-        return Counter(verbs)
+        return Counter(w.lemma_ for w in self.words if w.pos_ == "VERB")
 
     def n_grams(self, n):
         grams = cytoolz.sliding_window(n, self.words)
-        for bg in cytoolz.remove(lambda x: any(t.like_num or t.is_stop for t in x), grams):
+        for bg in cytoolz.remove(
+            lambda x: any(t.like_num or t.is_stop for t in x), grams
+        ):
             yield " ".join(g.text for g in bg)
 
     def pos_grams(self, n):
         grams = cytoolz.sliding_window(n, self.words)
-        for bg in cytoolz.remove(lambda x: any(t.like_num or t.is_stop for t in x), grams):
+        for bg in cytoolz.remove(
+            lambda x: any(t.like_num or t.is_stop for t in x), grams
+        ):
             yield " ".join(g.pos_ for g in bg)
 
     def all_stats(self, n=None, r=False):
@@ -149,10 +155,10 @@ class Stats:
         n: return n-n most frequent elements. If `None` return all elements,
         r: round decimals to `r` digits precision. If `None` return unrounded averages
         """
+
         def maybe_round(num):
             return round(num, r) if r else num
 
-        log.debug(f"PoS: {set(t.pos_ for t in self.doc)}")
         return {
             "n_words": self.n_words,
             "words_freq": self.word_frequencies.most_common(n),
