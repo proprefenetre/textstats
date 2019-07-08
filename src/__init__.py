@@ -18,11 +18,27 @@ log = logging.getLogger(__name__)
 app = Flask(__name__)
 
 
-@app.route("/logs", methods=["GET"])
-def logs():
-    with open(log_file, "r") as f:
-        logs = f.read()
-    return logs
+class InvalidUsage(Exception):
+    status_code = 400
+
+    def __init__(self, message, status_code=None, payload=None):
+        Exception.__init__(self)
+        self.message = message
+        if status_code is not None:
+            self.status_code = status_code
+        self.payload = payload
+
+    def to_dict(self):
+        rv = dict(self.payload or ())
+        rv['message'] = self.message
+        return rv
+
+
+@app.errorhandler(InvalidUsage)
+def handle_invalid_usage(error):
+    response = jsonify(error.to_dict())
+    response.status_code = error.status_code
+    return response
 
 
 @app.route("/", methods=["POST"])
@@ -39,23 +55,20 @@ def textstats():
     if request.method == "POST":
         if request.data and isinstance(request.data, bytes):
             data = request.data
-        elif request.form:
+        elif request.files:
             data = request.files.get("file", None)
             if not data:
                 log.warning("No file provided")
             else:
                 log.debug(f"file provided: {data}")
             layer = request.form.get("layer", False)
-            entities = request.form.get("entities", False)
-            log.debug(f"Merge layers: {layer}\nentities: {entities}")
+            # entities = request.form.get("entities", False)
+            entities = False
         else:
-            return "No document specified\n"
+            raise InvalidUsage("No document provided", status_code=400)
 
     td = TEIDocument()
     td.load(data)
-    log.debug(
-        f"TEIDocument loaded: {request.files.get('filename', None)}:{td.docinfo()}"
-    )
     text_stats = dict()
 
     if entities:
@@ -65,15 +78,12 @@ def textstats():
             text_stats[f"num_{k}"] = len(v)
 
     if layer:
-        if layer in td.text().keys():
-            text = " ".join(td.text().get(layer))
-        else:
-            log.debug(f"'{layer}' not in layers")
-            return f"Invalid text layer: '{layer}'"
+        try:
+            text = " ".join(td.text()[layer])
+        except KeyError:
+            raise InvalidUsage(f"'{layer}' not in layers", status_code=400)
     else:
-        text = " ".join(td.text().values())
-
-    log.debug(f"text: {text[:40]}")
+        text = " ".join(t[0] for t in td.text().values())
 
     models = {"en": "en_core_web_sm", "fr": "fr_core_news_sm", "nl": "nl_core_news_sm"}
 
@@ -85,6 +95,9 @@ def textstats():
 
     doc = nlp(pipeline(text))
 
-    text_stats.update(Stats(doc).all_stats(n=10, r=2))
+    try:
+        text_stats.update(Stats(doc).all_stats(n=10, r=2))
+    except AttributeError:
+        raise InvalidUsage("Document is too short", status_code=400)
 
     return jsonify(text_stats)
