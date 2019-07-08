@@ -5,11 +5,11 @@ import logging
 import operator
 import re
 
+import cytoolz
 import networkx as nx
 from sklearn.feature_extraction.text import TfidfVectorizer
 import spacy
 import textacy.keyterms
-import cytoolz
 
 log = logging.getLogger(__name__)
 
@@ -63,7 +63,8 @@ def normalize_patterns(text, patterns=None):
             (r"/", ","),
             (r"(t)'(\w+)", r"\1\2"),
             (r"_", " "),
-            (r"\u00b7", ",")
+            (r"\u00b7", ","),
+            ("'t", "het")
         ]
     log.debug(f"substitution patterns: {patterns}\n")
     for pat in patterns:
@@ -84,21 +85,6 @@ def pipeline(text, whitespace=True, dashes=True, quotes=True, patterns=True):
         text = normalize_patterns(text)
 
     return text
-
-
-def ngrams(text, n=2):
-
-    grams = list(cytoolz.sliding_window(n, text))
-
-    return grams
-
-    # for ng in grams:
-    #     if isinstance(ng[0], spacy.tokens.token.Token):
-    #         if any(x.like_num or x.is_stop for x in ng):
-    #             continue
-    #         yield " ".join(n.lemma_ for n in ng)
-    #     else:
-    #         yield " ".join(ng)
 
 
 def key_sentences(text, n=10):
@@ -136,20 +122,22 @@ class Stats:
         return Counter(w.lemma_ for w in self.words)
 
     @property
-    def frequent_nouns(self):
-        return Counter(w.lemma_ for w in itertools.takewhile(lambda t: t.pos_ == "NOUN", self.words))
+    def nouns(self):
+        nouns = [w.lemma_ for w in filter(lambda t: t.pos_ == "NOUN", self.words)]
+        log.debug(f"Nouns: {nouns}")
+        return Counter(nouns)
 
     @property
-    def frequent_verbs(self):
-        return Counter(w.lemma_ for w in itertools.takewhile(lambda t: t.pos_ == "VERB", self.words))
+    def verbs(self):
+        verbs = [w.lemma_ for w in filter(lambda t: t.pos_ == "VERB", self.words)]
+        log.debug(f"Verbs: {verbs}")
+        return Counter(verbs)
 
-    @property
     def n_grams(self, n):
         grams = cytoolz.sliding_window(n, self.words)
         for bg in cytoolz.remove(lambda x: any(t.like_num or t.is_stop for t in x), grams):
             yield " ".join(g.text for g in bg)
 
-    @property
     def pos_grams(self, n):
         grams = cytoolz.sliding_window(n, self.words)
         for bg in cytoolz.remove(lambda x: any(t.like_num or t.is_stop for t in x), grams):
@@ -164,17 +152,18 @@ class Stats:
         def maybe_round(num):
             return round(num, r) if r else num
 
+        log.debug(f"PoS: {set(t.pos_ for t in self.doc)}")
         return {
             "n_words": self.n_words,
             "words_freq": self.word_frequencies.most_common(n),
             "avg_word_length": maybe_round(self.avg_word_length),
-            "frequent_nouns": self.frequent_nouns.most_common(n),
-            "frequent_verbs": self.frequent_verbs.most_common(n),
+            "frequent_nouns": self.nouns.most_common(n),
+            "frequent_verbs": self.verbs.most_common(n),
             "key_terms": textacy.keyterms.textrank(self.doc),
             "n_sents": self.n_sentences,
             "avg_sentence_length": maybe_round(self.avg_sent_length),
             "key_sentences": key_sentences(self.doc),
             "bigrams": Counter(self.n_grams(2)).most_common(n),
             "trigrams": Counter(self.n_grams(3)).most_common(n),
-            "abstract_trigrams": Counter(self.pos_trigrams).most_common(n),
+            "abstract_trigrams": Counter(self.pos_grams(3)).most_common(n),
         }

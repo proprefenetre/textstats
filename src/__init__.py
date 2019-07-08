@@ -6,7 +6,7 @@ from flask import Flask, request, jsonify, session
 import spacy
 
 from .teidoc import TEIDocument
-from .processing import pipeline, stats
+from .processing import pipeline, Stats
 
 
 log_file = os.path.join(os.path.dirname(__file__), "textstats.log")
@@ -26,9 +26,6 @@ def logs():
 
 @app.route("/", methods=["POST"])
 def textstats():
-    # if request.method == "GET":
-    #     session["layer"] = request.args.get("layers", False)
-    #     session["entities"] = request.args.get("entities", False)
     log.debug(f"HEADERS:\n {request.headers}\n"
               f"REQ_path: {request.path}\n"
               f"ARGS: {request.args}\n"
@@ -47,24 +44,26 @@ def textstats():
             else:
                 log.debug(f"file provided: {data}")
             layer = request.form.get("layer", False)
-            get_entitiies = request.form.get("entities", False)
-            log.debug(f"Merge layers: {layer}\nentities: {get_entitiies}")
+            entitiies = request.form.get("entities", False)
+            log.debug(f"Merge layers: {layer}\nentities: {entitiies}")
         else:
             return "No document specified\n"
 
     td = TEIDocument()
     td.load(data)
-    log.debug(f"TEIDocument loaded: {td.docinfo()}")
+    log.debug(f"TEIDocument loaded: {request.files.get('filename', None)}:{td.docinfo()}")
     text_stats = dict()
 
     # TODO: add entity names (Van Gogh)
-    if get_entitiies:
+    if entitiies:
         log.debug("Extracting entities")
         text_stats["entities"] = td.entities()
         for k, v in text_stats["entities"].items():
             text_stats[f"num_{k}"] = len(v)
 
     nlp = spacy.load("nl_core_news_sm")
+    nlp.Defaults.stop_words.add("zoo")
+    nlp.Defaults.stop_words.add("zoo'n")
 
     log.debug(f"text layers: {td.text().keys()}")
     if layer:
@@ -74,6 +73,6 @@ def textstats():
 
     doc = nlp(pipeline(text))
 
-    text_stats["counts"] = stats(doc)
+    text_stats.update(Stats(doc).all_stats(n=10, r=2))
 
     return jsonify(text_stats)
