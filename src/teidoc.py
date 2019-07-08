@@ -50,10 +50,12 @@ class TEIDocument:
         xml = html.unescape(xml).encode("utf-8")
 
         self.tree = etree.fromstring(xml, self.parser)
-        log.debug(f"self.tree: {type(self.tree)}")
+
+        if not self.docinfo.get("root-name").startswith("TEI"):
+            raise ValueError(f"Invalid xml: {self.docinfo}")
 
         self.nsmap = self._get_nsmap()
-        log.debug("loaded TEIDocument")
+        log.debug("Parsed XML")
 
     def _get_nsmap(self):
         """ Return a tree's namespaces, mapped to prefixes.
