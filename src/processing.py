@@ -2,12 +2,14 @@
 from collections import Counter
 import itertools
 import logging
+import operator
 import re
 
 import networkx as nx
 from sklearn.feature_extraction.text import TfidfVectorizer
 import spacy
 import textacy.keyterms
+import cytoolz
 
 log = logging.getLogger(__name__)
 
@@ -61,6 +63,7 @@ def normalize_patterns(text, patterns=None):
             (r"/", ","),
             (r"(t)'(\w+)", r"\1\2"),
             (r"_", " "),
+            (r"\u00b7", ",")
         ]
     log.debug(f"substitution patterns: {patterns}\n")
     for pat in patterns:
@@ -85,30 +88,21 @@ def pipeline(text, whitespace=True, dashes=True, quotes=True, patterns=True):
 
 def ngrams(text, n=2):
 
-    if n == 2:
-        a, b = itertools.tee(text, 2)
-        next(b, None)
-        grams = list(zip(a, b))
-    elif n == 3:
-        a, b, c = itertools.tee(text, 3)
-        next(b, None)
-        next(c, None)
-        next(c, None)
-        grams = list(zip(a, b, c))
-    else:
-        logging.error(f"invalid n: {n}. Bigrams or trigrams only.")
-        raise ValueError(f"invalid n: {n}. Bigrams or trigrams only.")
+    grams = list(cytoolz.sliding_window(n, text))
 
-    for ng in grams:
-        if isinstance(ng[0], spacy.tokens.token.Token):
-            if any(x.like_num or x.is_stop for x in ng):
-                continue
-            yield " ".join(n.lemma_ for n in ng)
-        else:
-            yield " ".join(ng)
+    return grams
+
+    # for ng in grams:
+    #     if isinstance(ng[0], spacy.tokens.token.Token):
+    #         if any(x.like_num or x.is_stop for x in ng):
+    #             continue
+    #         yield " ".join(n.lemma_ for n in ng)
+    #     else:
+    #         yield " ".join(ng)
 
 
-def key_sentences(sents, n=10):
+def key_sentences(text, n=10):
+    sents = [s.text for s in text.sents]
     tfidf = TfidfVectorizer().fit_transform(sents)
     sim_graph = nx.from_scipy_sparse_matrix(tfidf * tfidf.T)
     results = sorted(
@@ -119,39 +113,68 @@ def key_sentences(sents, n=10):
     return results[:n]
 
 
-def stats(doc):
-    """ Return basic counts.
+class Stats:
+    """ Return basic text statistics
 
     Parameters:
-        doc: text processed by Spacy (spacy.tokens.doc.Doc)
+        doc: spacy.tokens.doc.Doc
     """
-    if len(doc) < 1:
-        log.warning(f"Empty document")
-        return {}
+    def __init__(self, doc):
+        if len(doc) < 1:
+            log.warning(f"Empty document")
+            return {}
+        self.doc = doc
+        self.words = [w for w in doc if not w.is_punct and not w.is_space and not w.is_currency]
+        self.n_words = len(self.words)
+        self.avg_word_length = sum(len(w) for w in self.words) / self.n_words
+        self.sentences = [s.text for s in doc.sents]
+        self.n_sentences = len(self.sentences)
+        self.avg_sent_length = self.n_words / self.n_sentences
 
-    words = [w for w in doc if not w.is_punct and not w.is_space and not w.is_currency]
-    word_frequencies = Counter(
-        w.lemma_
-        for w in words
-        if not w.is_stop
-        and not w.pos in ["PART", "PRON", "NUM", "CONJ", "CCONJ", "DET"]
-    )
-    sentences = [s.text for s in doc.sents]
-    avg_sent_length = len(words) / len(sentences)
-    bgrams = list(ngrams([w for w in words]))
-    tgrams = list(ngrams([w for w in words], 3))
-    pos_bigrams = list(ngrams([w.pos_ for w in words if not w.like_num]))
-    pos_trigrams = list(ngrams([w.pos_ for w in words if not w.like_num], 3))
+    @property
+    def word_frequencies(self):
+        return Counter(w.lemma_ for w in self.words)
 
-    return {
-        "n_words": len(words),
-        "words_freq": word_frequencies.most_common(10),
-        "n_sents": len(sentences),
-        "avg_sentence_length": avg_sent_length,
-        "bigrams": Counter(bgrams).most_common(10),
-        "trigrams": Counter(tgrams).most_common(10),
-        "abstract_bigrams": Counter(pos_bigrams).most_common(10),
-        "abstract_trigrams": Counter(pos_trigrams).most_common(10),
-        "key_sentences": key_sentences(sentences),
-        "key_terms": textacy.keyterms.textrank(doc),
-    }
+    @property
+    def frequent_nouns(self):
+        return Counter(w.lemma_ for w in itertools.takewhile(lambda t: t.pos_ == "NOUN", self.words))
+
+    @property
+    def frequent_verbs(self):
+        return Counter(w.lemma_ for w in itertools.takewhile(lambda t: t.pos_ == "VERB", self.words))
+
+    @property
+    def n_grams(self, n):
+        grams = cytoolz.sliding_window(n, self.words)
+        for bg in cytoolz.remove(lambda x: any(t.like_num or t.is_stop for t in x), grams):
+            yield " ".join(g.text for g in bg)
+
+    @property
+    def pos_grams(self, n):
+        grams = cytoolz.sliding_window(n, self.words)
+        for bg in cytoolz.remove(lambda x: any(t.like_num or t.is_stop for t in x), grams):
+            yield " ".join(g.pos_ for g in bg)
+
+    def all_stats(self, n=None, r=False):
+        """ Return all statistics
+
+        n: return n-n most frequent elements. If `None` return all elements,
+        r: round decimals to `r` digits precision. If `None` return unrounded averages
+        """
+        def maybe_round(num):
+            return round(num, r) if r else num
+
+        return {
+            "n_words": self.n_words,
+            "words_freq": self.word_frequencies.most_common(n),
+            "avg_word_length": maybe_round(self.avg_word_length),
+            "frequent_nouns": self.frequent_nouns.most_common(n),
+            "frequent_verbs": self.frequent_verbs.most_common(n),
+            "key_terms": textacy.keyterms.textrank(self.doc),
+            "n_sents": self.n_sentences,
+            "avg_sentence_length": maybe_round(self.avg_sent_length),
+            "key_sentences": key_sentences(self.doc),
+            "bigrams": Counter(self.n_grams(2)).most_common(n),
+            "trigrams": Counter(self.n_grams(3)).most_common(n),
+            "abstract_trigrams": Counter(self.pos_trigrams).most_common(n),
+        }
