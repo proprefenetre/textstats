@@ -14,6 +14,8 @@ RUN poetry install --no-interaction
 
 # spacy model
 RUN python -m spacy download nl_core_news_sm
+RUN python -m spacy download fr_core_news_sm
+RUN python -m spacy download en_core_web_sm
 
 # Creating folders, and files for a project:
 COPY . .
