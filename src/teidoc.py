@@ -1,11 +1,11 @@
 from collections import defaultdict
 import html
+import io
 import logging
-from lxml import etree
+from lxml import etree, objectify
 import os.path
 import unicodedata
 
-from werkzeug.datastructures import FileStorage
 
 log = logging.getLogger(__name__)
 
@@ -24,6 +24,21 @@ class TEIDocument:
         self.tree = None
         self.nsmap = None
 
+    @classmethod
+    def from_tree(cls, tree):
+        td = cls()
+        td.tree = tree
+        td.nsmap = td._get_nsmap()
+
+        return td
+
+    @classmethod
+    def from_path(cls, path):
+        td = cls()
+        td.load(path)
+
+        return td
+
     def load(self, source):
         """ Read source from file and parse it.
 
@@ -34,12 +49,12 @@ class TEIDocument:
         if not source:
             raise ValueError("No file provided")
 
-        if isinstance(source, FileStorage):
+        if isinstance(source, io.IOBase):
             xml = source.read()
             log.debug(f"source: {type(source)}")
             log.debug(f"xml: {type(xml)}")
         elif os.path.isfile(os.path.abspath(source)):
-            log.debug(f"{source}: is file and exists")
+            log.debug(f"source: '{source}'")
             with open(source, "r") as f:
                 xml = f.read()
 
@@ -51,34 +66,8 @@ class TEIDocument:
 
         self.tree = etree.fromstring(xml, self.parser)
 
-        if not self.docinfo.get("root-name").startswith("TEI"):
-            raise ValueError(f"Invalid xml: {self.docinfo}")
-
         self.nsmap = self._get_nsmap()
-        log.debug("Parsed XML")
-
-    def _get_nsmap(self):
-        """ Return a tree's namespaces, mapped to prefixes.
-
-        the default namespace is replaced with 'tei'
-        """
-        nsmap = None
-        if isinstance(self.tree, etree._ElementTree):
-            nsmap = self.tree.getroot().nsmap
-        elif isinstance(self.tree, etree._Element):
-            nsmap = self.tree.nsmap
-
-        if not nsmap:
-            log.warning(f"No namespaces in document.")
-        else:
-            # for k, v in nsmap.items():
-            #     if k is None:
-            nsmap["tei"] = nsmap.pop(None)
-            log.debug(f"Replaced default namespace: {nsmap}")
-        return nsmap
-
-    def _as_ElementTree(self):
-        return etree.ElementTree(self.tree)
+        log.debug(f"loaded: {type(self.tree)}")
 
     def docinfo(self, attr=None):
         di = self._as_ElementTree().docinfo
@@ -121,52 +110,82 @@ class TEIDocument:
             )
         return entities
 
-    def text(self, layers=False):
+    def text(self, kind=None):
         """
-        Return the first div in the <body> as a single string, unmodified.
+        Extract text from the divs in the text-element
 
-        Parameters
-        ----------
-        layers: bool
-            if true, return a list with the text of each <div> in the <body>
+        Parameters:
+        -----------
+            kind: if None, return a defaultdict(list) of 'type': [text, ...] pairs. If specified, return a list
+            containing the text found in divs of that kind
+
+        Raises:
+        -------
+            KeyError: if kind is specified but not present in the document
+
         """
         text = defaultdict(list)
-        if self.nsmap:
-            expr = "//tei:text//tei:body//tei:div"
-        else:
-            expr = "//text//body//div"
+        expr = "//tei:text//tei:body//tei:div"
+        if not self.nsmap:
+            expr = expr.replace("tei:", "")
+
+        log.debug(f"using namespaces: {self.nsmap}")
 
         for d in self.tree.xpath(expr, namespaces=self.nsmap):
             layer = []
-            div = "tei:div" if self.nsmap.get("tei", None) else "div"
             for elt in d:
                 # prevent nested layers
-                if elt.tag == div:
+                if self._clean_tag(elt) == "div":
+                    log.debug(f"nested div found in {'/'.join(self._ancestors(elt))}")
                     continue
                 layer.append(elt.xpath("string()").strip())
-            text[d.get("type")].append(" ".join(layer))
+            text[d.get("type", "default")].append(" ".join(layer))
+            log.debug(f"layers: {text.keys()}")
 
+        if kind:
+            if kind in text:
+                return text[kind]
+            else:
+                raise KeyError(f"{kind} not in text")
         return text
 
-    def _unicode_characters(self):
-        """Return all unique unicode codepoints in the original text. """
+    def _ancestors(self, elt):
+        return [self._as_xpath(e) for e in reversed(list(elt.iterancestors()))]
 
-        def is_unicode(char):
-            try:
-                char.encode("ascii")
-            except UnicodeEncodeError:
-                return True
-            return False
+    def _descendants(self, elt):
+        return [self._as_xpath(e) for e in reversed(list(elt.iterdescendants()))]
 
-        chars = []
-        for c in {ch for ch in " ".join(self.text().values())}:
-            if is_unicode(c):
-                chars.append(
-                    {
-                        "character": c,
-                        "codepoint": f"0x{ord(c):04x}",
-                        "category": unicodedata.category(c),
-                        "name": unicodedata.name(c),
-                    }
-                )
-        return chars
+    def _as_xpath(self, elt):
+        attr = ", ".join(f"@{k}=\"{v}\"" for k, v in elt.items())
+        return f"{self._clean_tag(elt)}[{attr}]" if attr else f"{self._clean_tag(elt)}"
+
+    def _clean_tag(self, elt):
+        return etree.QName(elt).localname
+
+    def _as_ElementTree(self):
+        return etree.ElementTree(self.tree)
+
+    def _get_nsmap(self):
+        """ Return a tree's namespaces, mapped to prefixes.
+
+        the default namespace is replaced with 'tei'
+        """
+        nsmap = None
+        if isinstance(self.tree, etree._ElementTree):
+            nsmap = self.tree.getroot().nsmap
+        elif isinstance(self.tree, etree._Element):
+            nsmap = self.tree.nsmap
+
+        if not nsmap:
+            log.warning(f"No namespaces in document.")
+        else:
+            nsmap["tei"] = nsmap.pop(None)
+            log.debug(f"Replaced default namespace: {nsmap}")
+        return nsmap
+
+    def _clear_namespaces(self):
+        root = etree.fromstring(etree.tostring(self.tree))
+        for elt in root.getiterator():
+            elt.tag = etree.QName(elt).localname
+        objectify.deannotate(root, cleanup_namespaces=True)
+        return root
