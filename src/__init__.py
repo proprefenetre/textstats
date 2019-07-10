@@ -5,9 +5,8 @@ import re
 from flask import Flask, request, jsonify, session
 import langdetect
 import spacy
-# from teidocument import TEIDocument
+from teidocument import TEIDocument
 
-from .teidoc import TEIDocument
 from .processing import pipeline, Stats
 
 
