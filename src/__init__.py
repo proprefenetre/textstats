@@ -5,6 +5,7 @@ import re
 from flask import Flask, request, jsonify, session
 import langdetect
 import spacy
+# from teidocument import TEIDocument
 
 from .teidoc import TEIDocument
 from .processing import pipeline, Stats
@@ -67,8 +68,7 @@ def textstats():
         else:
             raise InvalidUsage("No document provided", status_code=400)
 
-    td = TEIDocument()
-    td.load(data)
+    td = TEIDocument(data.read())
     text_stats = dict()
 
     if entities:
