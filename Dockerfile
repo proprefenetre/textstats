@@ -1,3 +1,4 @@
+# Use Debian b/c of cython dependencies
 FROM python:3.7.3-stretch
 
 # System deps:

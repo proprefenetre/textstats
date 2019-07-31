@@ -410,19 +410,16 @@ version = "0.0.7"
 
 [[package]]
 category = "main"
-description = ""
+description = "Extract text and metadata from TEI-documents"
 name = "teidocument"
 optional = false
-python-versions = "^3.7"
-version = "1.0.4"
+python-versions = ">=3.7,<4.0"
+version = "1.0.7"
 
 [package.dependencies]
-lxml = "^4.3"
+lxml = ">=4.3,<5.0"
+xmltodict = ">=0.12.0,<0.13.0"
 
-[package.source]
-reference = "b062d865815569052bc9764b72cae3d9169551ea"
-type = "git"
-url = "/Users/niels/projects/TEIDocument/"
 [[package]]
 category = "main"
 description = "NLP, before and after spaCy"
@@ -507,6 +504,14 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 version = "0.15.4"
 
 [[package]]
+category = "main"
+description = "Makes working with XML feel like you are working with JSON"
+name = "xmltodict"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+version = "0.12.0"
+
+[[package]]
 category = "dev"
 description = "Backport of pathlib-compatible object wrapper for zip files"
 name = "zipp"
@@ -515,7 +520,7 @@ python-versions = ">=2.7"
 version = "0.5.2"
 
 [metadata]
-content-hash = "72c838d02049c6de2cdfdf465d8fc736ad455809227d82719dccdf49558953d4"
+content-hash = "e6041dd08899dd94e8c7549864071db74dca8f1dadf98ccabd2be64f346627b3"
 python-versions = "^3.7"
 
 [metadata.hashes]
@@ -560,7 +565,7 @@ scipy = ["03b1e0775edbe6a4c64effb05fff2ce1429b76d29d754aa5ee2d848b60033351", "09
 six = ["3350809f0555b11f552448330d0b52d5f24c91a322ea4a15ef22629740f3761c", "d16a0141ec1a18405cd4ce8b4613101da75da0e9a7aec5bdd4fa804d0e0eba73"]
 spacy = ["0d80b079c2badb741723bb99e866adb06ff0cff067435fbac8f862a55261a40e", "1c6242c08f075b72b4bc8eacda33f7ade0e132b2743548cc7fa18ebeea830e9d", "1e2face83bb83fc1ddc132577429dcfb247f4362680f16a9ac5b78a699a3ad98", "23b8382544afb5f0e8362c9d3c8a1dafa45b6a3b06a0663c3e48e6bcca7b91c0", "2edc25d517ed795afc799c72fe197b447d4ed2ec0152c1465f292e3b2d4bd558", "53d6185ca14435e9f1f93ef75ba5ff8fd5c6d96b948713d985f7b90629d582a0", "8fe4afa71f043aa068ab0ac4e572134f545c8f9a8988fce6fc9f5b4336b506a0", "9bd43fb037645c251744dd03fbc780dc657af94847c4b458bee7c236b892a238", "c5a61ea342f5b2a720ee593dd28b882741985c4c331deb3081b46c7f0cade8b1", "f828e6a0b6e38dbf903df73ed70813135f2bba637447ed1b7d2aaeb48b0df8c1"]
 srsly = ["06c98093f9d1e2573e6bcb64945b748326b31aa3dd8c4945f195a9f33858b420", "7817c37b0c01279e6d12fee1fc11eaea8e4110d5642834b68cd3d15307d8b6df", "78d987ad6b785badfe6150c314b0150ee2bf99f3ca38e138ebb2c024911d528e", "7aaccb4e8e73f825b0ae49f6712c43792c4281e4126fdbd2812314d6704e27a4", "7d3a67800a651b367dec37195481b8e6ef11b7747501c45177c333bcf0f1413c", "9ccb083828b1443eb016bc874bb4854618c439181065e62d157c5d91064f048c", "b7d539d70c30c272542ca3aae0b2a75f2ca455687c951a238aab69e57bfd4ef6", "c2a1f597f83e4356618bd49b395c05c87e02bb4a67aaf175d391e7b0f940708b", "c5a9bc9d04d1dbc2d40776c2a11a70dbb5253ef10b4e0203b70c96d8540f10c6", "d717fddc3772308f97cee018c1c8d5202f47a223782f5bc28bf5f588bd261fb6", "dc4163ad94bda47196c57ef438dc718569f264ef11e8079b3e85f73a2b9bde7f", "e1f6779a993740da8545ac0e1d2b8d5b27cc67e318c6b8bf200481165c76d6e4", "f3a2948b088064f719918ef46a1f14ffbd3ccab4c639c4ecb65053814fb036ed", "f845dc259a18a6ed83c4bc3dde6722563b4a7536a23c5a8c2159cdd242b8f994"]
-teidocument = []
+teidocument = ["e2540dcacf2d5d5b8ad0b185b2e6363b639cac9928ca6a6e1c22d1030305d95c", "e4c7ec61e641c705a05a8716e8f39a4a731ac1c993e9ee8732d897e0e27f9629"]
 textacy = ["003177bf2ebcec84624db1ade132aaf53f4e07c2dbf25d87e65387999d66d1a0", "65ae9e38fb714fec446bb89ae0c8f6cdeb9bcdbdf699d21f36cec83ccf133574"]
 thinc = ["00c74dec34e82877832816782bfe743d06860e1fe7717e3ecbc3e857a34a5b92", "12cc82e16dbd9578de78c5f6ad424670f8bb0aac44bbfbfe7c2aef379f383028", "29009cab3f940d070be41a5d4560af216895ffaf0f9c672c8c02b34219e928bd", "2ab4fa86e7c279918cc19803e2cf138317e81ce1ad0bea4b45c4f8b7664574e8", "40e202274943cdbd3b72a1cf554a2b5b8f3e7055d0ccd5b0f810eb422fbd27c3", "5e3af9fb39508abad8109c3274ac3cfe3ea3e1e23d774b81b62670fa1681f618", "6a7b107884afc53d5b45fd951e77bae626ae90ce24d340f0ddf00678b4bd44b4", "c6cf94dc67bb903dde2726be9bb808bb56e31677fba80141a75463b9a921362c", "dd10f407267a8cc441d3a1adcbdf754876792a3933f2ed8977d0717abae48fd6"]
 toolz = ["929f0a7ea7f61c178bd951bdae93920515d3fbdbafc8e6caf82d752b9b3b31c9"]
@@ -568,4 +573,5 @@ tqdm = ["14a285392c32b6f8222ecfbcd217838f88e11630affe9006cd0e94c7eff3cb61", "25d
 urllib3 = ["b246607a25ac80bedac05c6f282e3cdaf3afb65420fd024ac94435cabe6e18d1", "dbe59173209418ae49d485b87d1681aefa36252ee85884c31346debd19463232"]
 wasabi = ["b4fbee9dd0c8f5cff6554c0463c565e2d52b7c844d7eccb477d29a6ff8567750", "f92c83e728bf1db6dc859ffc861afa328d2da8ef0c7a19300e5fb1bd5762b277"]
 werkzeug = ["865856ebb55c4dcd0630cdd8f3331a1847a819dda7e8c750d3db6f2aa6c0209c", "a0b915f0815982fb2a09161cb8f31708052d0951c3ba433ccc5e1aa276507ca6"]
+xmltodict = ["50d8c638ed7ecb88d90561beedbf720c9b4e851a9fa6c47ebd64e99d166d8a21", "8bbcb45cc982f48b2ca8fe7e7827c5d792f217ecf1792626f808bf41c3b86051"]
 zipp = ["4970c3758f4e89a7857a973b1e2a5d75bcdc47794442f2e2dd4fe8e0466e809a", "8a5712cfd3bb4248015eb3b0b3c54a5f6ee3f2425963ef2a0125b8bc40aafaec"]
