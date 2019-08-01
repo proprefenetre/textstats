@@ -62,12 +62,11 @@ def textstats():
             else:
                 log.debug(f"file provided: {data}")
             layer = request.form.get("layer", False)
-            # entities = request.form.get("entities", False)
             entities = False
         else:
             raise InvalidUsage("No document provided", status_code=400)
 
-    td = TEIDocument(data.read())
+    td = TEIDocument(data)
     text_stats = dict()
 
     if entities:
