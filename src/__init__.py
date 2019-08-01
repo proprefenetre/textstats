@@ -61,6 +61,8 @@ def textstats():
     )
 
     if request.method == "POST":
+        layer = False
+        entities = False
         if request.data and isinstance(request.data, bytes):
             data = request.data
         elif request.files:
@@ -70,14 +72,14 @@ def textstats():
             else:
                 log.debug(f"file provided: {data}")
             layer = request.form.get("layer", False)
-            entities = False
+            entities = request.form.get("entities", False)
         else:
             raise InvalidUsage("No document provided", status_code=400)
 
     try:
         td = TEIDocument(data)
     except AssertionError as err:
-        Raise InvalidUsage(f"Invalid XML: {_head(data)}")
+        raise InvalidUsage(f"Invalid XML: {_head(data)}")
 
     text_stats = dict()
 
