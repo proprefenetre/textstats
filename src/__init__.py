@@ -1,3 +1,4 @@
+from itertools import islice
 import logging
 import os
 import re
@@ -16,6 +17,13 @@ logging.basicConfig(filename=log_file, filemode="w", format=FORMAT, level=loggin
 log = logging.getLogger(__name__)
 
 app = Flask(__name__)
+
+
+def _head(obj, n=10):
+    if hasattr(obj, "read") or hasattr(obj, '__getitem__'):
+        return list(islice(obj, n))
+    else:
+        raise TypeError(f"Object of type {type(obj)} does not support indexing")
 
 
 class InvalidUsage(Exception):
@@ -66,7 +74,11 @@ def textstats():
         else:
             raise InvalidUsage("No document provided", status_code=400)
 
-    td = TEIDocument(data)
+    try:
+        td = TEIDocument(data)
+    except AssertionError as err:
+        Raise InvalidUsage(f"Invalid XML: {_head(data)}")
+
     text_stats = dict()
 
     if entities:
