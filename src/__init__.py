@@ -20,7 +20,15 @@ app = Flask(__name__)
 
 
 def _head(obj, n=10):
-    if hasattr(obj, "read") or hasattr(obj, '__getitem__'):
+    if hasattr(obj, "read"):
+        return list(islice(obj.read(), n))
+    elif isinstance(obj, (str, bytes)):
+        if isinstance(obj, bytes):
+            obj = obj.decode("utf-8")
+        if len(obj) < 100:
+            return obj
+        return "".join(islice(obj, n))
+    elif hasattr(obj, '__getitem__'):
         return list(islice(obj, n))
     else:
         raise TypeError(f"Object of type {type(obj)} does not support indexing")
@@ -74,7 +82,7 @@ def textstats():
             layer = request.form.get("layer", False)
             entities = request.form.get("entities", False)
         else:
-            raise InvalidUsage("No document provided", status_code=400)
+            raise InvalidUsage("No document provided")
 
     try:
         td = TEIDocument(data)
@@ -93,13 +101,16 @@ def textstats():
         try:
             text = " ".join(td.text()[layer])
         except KeyError:
-            raise InvalidUsage(f"'{layer}' not in layers", status_code=400)
+            raise InvalidUsage(f"'{layer}' not in layers")
     else:
         text = " ".join(t[0] for t in td.text().values())
 
     models = {"en": "en_core_web_sm", "fr": "fr_core_news_sm", "nl": "nl_core_news_sm"}
 
-    lang = langdetect.detect(text)
+    try:
+        lang = langdetect.detect(text)
+    except langdetect.lang_detect_exception.LangDetectException:
+        raise InvalidUsage(f"Invalid XML: {_head(data)}")
 
     log.debug(f"language: {lang}")
 
@@ -110,6 +121,6 @@ def textstats():
     try:
         text_stats.update(Stats(doc).all_stats(n=10, r=2))
     except AttributeError:
-        raise InvalidUsage("Document is too short", status_code=400)
+        raise InvalidUsage("Document is too short")
 
     return jsonify(text_stats)
